@@ -1,71 +1,73 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>{{#useGenericHost}}
-    <GenerateAssemblyInfo>true</GenerateAssemblyInfo> <!-- setting GenerateAssemblyInfo to false causes this bug https://github.com/dotnet/project-system/issues/3934 -->{{/useGenericHost}}{{^useGenericHost}}
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo><!-- setting GenerateAssemblyInfo to false causes this bug https://github.com/dotnet/project-system/issues/3934 -->{{/useGenericHost}}
-    <TargetFramework{{#multiTarget}}s{{/multiTarget}}>{{targetFramework}}</TargetFramework{{#multiTarget}}s{{/multiTarget}}>
-    <AssemblyName>{{packageName}}</AssemblyName>
-    <PackageId>{{packageName}}</PackageId>
-    <OutputType>Library</OutputType>
-    <Authors>{{packageAuthors}}</Authors>
-    <Company>{{packageCompany}}</Company>
-    <AssemblyTitle>{{packageTitle}}</AssemblyTitle>
-    <Description>{{packageDescription}}</Description>
-    <Copyright>{{packageCopyright}}</Copyright>
-    <RootNamespace>{{packageName}}</RootNamespace>
-    <Version>{{packageVersion}}</Version>
-    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\{{packageName}}.xml</DocumentationFile>{{#licenseId}}
-    <PackageLicenseExpression>{{.}}</PackageLicenseExpression>{{/licenseId}}
-    <RepositoryUrl>https://{{{gitHost}}}/{{{gitUserId}}}/{{{gitRepoId}}}.git</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>{{#releaseNote}}
-    <PackageReleaseNotes>{{.}}</PackageReleaseNotes>{{/releaseNote}}{{#packageTags}}
-    <PackageTags>{{{.}}}</PackageTags>{{/packageTags}}{{#nrt}}
-    <Nullable>{{#useGenericHost}}enable{{/useGenericHost}}{{^useGenericHost}}annotations{{/useGenericHost}}</Nullable>{{/nrt}}
-  </PropertyGroup>
+<PropertyGroup>{{#useGenericHost}}
+<GenerateAssemblyInfo>true</GenerateAssemblyInfo> <!-- setting GenerateAssemblyInfo to false causes this bug https://github.com/dotnet/project-system/issues/3934 -->{{/useGenericHost}}{{^useGenericHost}}
+<GenerateAssemblyInfo>false</GenerateAssemblyInfo><!-- setting GenerateAssemblyInfo to false causes this bug https://github.com/dotnet/project-system/issues/3934 -->{{/useGenericHost}}
+<TargetFramework{{#multiTarget}}s{{/multiTarget}}>{{targetFramework}}</TargetFramework{{#multiTarget}}s{{/multiTarget}}>
+<AssemblyName>{{packageName}}</AssemblyName>
+<PackageId>{{packageName}}</PackageId>
+<OutputType>Library</OutputType>
+<Authors>{{packageAuthors}}</Authors>
+<Company>{{packageCompany}}</Company>
+<AssemblyTitle>{{packageTitle}}</AssemblyTitle>
+<Description>{{packageDescription}}</Description>
+<Copyright>{{packageCopyright}}</Copyright>
+<RootNamespace>{{packageName}}</RootNamespace>
+<Version>{{packageVersion}}</Version>
+<DocumentationFile>bin\$(Configuration)\$(TargetFramework)\{{packageName}}.xml</DocumentationFile>{{#licenseId}}
+<PackageLicenseExpression>{{.}}</PackageLicenseExpression>{{/licenseId}}
+<RepositoryUrl>https://{{{gitHost}}}/{{{gitUserId}}}/{{{gitRepoId}}}.git</RepositoryUrl>
+<RepositoryType>git</RepositoryType>{{#releaseNote}}
+<PackageReleaseNotes>{{.}}</PackageReleaseNotes>{{/releaseNote}}{{#packageTags}}
+<PackageTags>{{{.}}}</PackageTags>{{/packageTags}}{{#nrt}}
+<Nullable>{{#useGenericHost}}enable{{/useGenericHost}}{{^useGenericHost}}annotations{{/useGenericHost}}</Nullable>{{/nrt}}
+</PropertyGroup>
 
-  <ItemGroup>
-    {{#useCompareNetObjects}}
-    <PackageReference Include="CompareNETObjects" Version="4.61.0" />{{! leave at this version until this is fixed https://github.com/GregFinzer/Compare-Net-Objects/issues/282 }}
-    {{/useCompareNetObjects}}
-    {{^useGenericHost}}
-    <PackageReference Include="JsonSubTypes" Version="2.0.1" />
-    <PackageReference Include="System.Text.Json" version="7.0.2" />
-    <PackageReference Include="Macross.Json.Extensions" Version="3.0.0" />
-    {{/useGenericHost}}
-      {{#useRestSharp}}
-    <PackageReference Include="RestSharp" Version="110.2.0" />
-      {{/useRestSharp}}
-      {{#useGenericHost}}
-    <PackageReference Include="Microsoft.Extensions.Http" Version="{{#lambda.first}}{{#netStandard}}5.0.0  {{/netStandard}}{{#net47}}7.0.0  {{/net47}}{{#net48}}7.0.0  {{/net48}}{{#net6.0}}6.0.0  {{/net6.0}}{{#net70OrLater}}7.0.0{{/net70OrLater}}{{/lambda.first}}" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="{{#lambda.first}}{{#netStandard}}5.0.0  {{/netStandard}}{{#net47}}7.0.0  {{/net47}}{{#net48}}7.0.0  {{/net48}}{{#net6.0}}6.0.1  {{/net6.0}}{{#net70OrLater}}7.0.1  {{/net70OrLater}}{{/lambda.first}}" />
-      {{#supportsRetry}}
-    <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="{{#lambda.first}}{{#netStandard}}5.0.1  {{/netStandard}}{{#net47}}7.0.0  {{/net47}}{{#net48}}7.0.0  {{/net48}}{{#net6.0}}6.0.19  {{/net6.0}}{{#net70OrLater}}7.0.8  {{/net70OrLater}}{{/lambda.first}}" />
-      {{/supportsRetry}}
-      {{/useGenericHost}}
-      {{^useGenericHost}}
-      {{#supportsRetry}}
-    <PackageReference Include="Polly" Version="{{^netStandard}}7.2.3{{/netStandard}}{{#netStandard}}7.2.3{{/netStandard}}" />
-      {{/supportsRetry}}
-      {{/useGenericHost}}
-    {{#validatable}}
-    {{^net60OrLater}}
-    <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
-    {{/net60OrLater}}
-    {{/validatable}}
-  </ItemGroup>
+<ItemGroup>
+{{#useCompareNetObjects}}
+  <PackageReference Include="CompareNETObjects"{{^useCPM}} Version="4.61.0"{{/useCPM}} />{{! leave at this Version until this is fixed https://github.com/GregFinzer/Compare-Net-Objects/issues/282 }}
+{{/useCompareNetObjects}}
+{{^useGenericHost}}
+  <PackageReference Include="JsonSubTypes"{{^useCPM}} Version="2.0.1"{{/useCPM}} />
+  <PackageReference Include="System.Text.Json"{{^useCPM}} Version="7.0.2"{{/useCPM}} />
+  <PackageReference Include="Macross.Json.Extensions"{{^useCPM}} Version="3.0.0"{{/useCPM}} />
+{{/useGenericHost}}
+{{#useRestSharp}}
+  <PackageReference Include="RestSharp"{{^useCPM}} Version="110.2.0"{{/useCPM}} />
+{{/useRestSharp}}
+{{#useGenericHost}}
+  <PackageReference Include="Microsoft.Extensions.Hosting"{{^useCPM}} Version="{{#lambda.first}}{{#netStandard}}5.0.0  {{/netStandard}}{{#net47}}7.0.0  {{/net47}}{{#net48}}7.0.0  {{/net48}}{{#net6.0}}6.0.1  {{/net6.0}}{{#net70OrLater}}7.0.1  {{/net70OrLater}}{{/lambda.first}}"{{/useCPM}} />
+  {{#supportsRetry}}
+    <PackageReference Include="Microsoft.Extensions.Http.Polly"{{^useCPM}} Version="{{#lambda.first}}{{#netStandard}}5.0.1  {{/netStandard}}{{#net47}}7.0.0  {{/net47}}{{#net48}}7.0.0  {{/net48}}{{#net6.0}}6.0.19  {{/net6.0}}{{#net70OrLater}}7.0.8  {{/net70OrLater}}{{/lambda.first}}"{{/useCPM}} />
+  {{/supportsRetry}}
+  {{^supportsRetry}}
+    <PackageReference Include="Microsoft.Extensions.Http"{{^useCPM}} Version="{{#lambda.first}}{{#netStandard}}5.0.0  {{/netStandard}}{{#net47}}7.0.0  {{/net47}}{{#net48}}7.0.0  {{/net48}}{{#net6.0}}6.0.0  {{/net6.0}}{{#net70OrLater}}7.0.0{{/net70OrLater}}{{/lambda.first}}"{{/useCPM}} />
+  {{/supportsRetry}}
+{{/useGenericHost}}
+{{^useGenericHost}}
+  {{#supportsRetry}}
+    <PackageReference Include="Polly"{{^useCPM}} Version="{{^netStandard}}7.2.3{{/netStandard}}{{#netStandard}}7.2.3{{/netStandard}}"{{/useCPM}} />
+  {{/supportsRetry}}
+{{/useGenericHost}}
+{{#validatable}}
+  {{^net60OrLater}}
+    <PackageReference Include="System.ComponentModel.Annotations"{{^useCPM}} Version="5.0.0"{{/useCPM}} />
+  {{/net60OrLater}}
+{{/validatable}}
+</ItemGroup>
 
 {{^useGenericHost}}
   <ItemGroup>
-    <None Remove="System.Web" />
-    {{#net48}}
+  <None Remove="System.Web" />
+  {{#net48}}
     <None Remove="System.Net.Http" />
-    {{/net48}}
+  {{/net48}}
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="System.Web" />
-    {{#net48}}
+  <Reference Include="System.Web" />
+  {{#net48}}
     <Reference Include="System.Net.Http" />
-    {{/net48}}
+  {{/net48}}
   </ItemGroup>
 {{/useGenericHost}}
 {{>netcore_project.additions}}</Project>
