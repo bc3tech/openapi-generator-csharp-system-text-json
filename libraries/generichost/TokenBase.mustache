@@ -7,7 +7,8 @@
 using System;
 
 namespace {{packageName}}.{{clientPackage}}
-{
+
+
     /// <summary>
     /// The base for all tokens.
     /// </summary>
@@ -31,7 +32,7 @@ namespace {{packageName}}.{{clientPackage}}
         {
             Timeout = timeout;
             
-            if (Timeout != null)
+            if (Timeout is not null)
                 StartTimer(Timeout.Value);
         }
 
@@ -66,8 +67,7 @@ namespace {{packageName}}.{{clientPackage}}
 
         private void OnTimer(object{{nrt?}} sender, System.Timers.ElapsedEventArgs e)
         {
-            if (TokenBecameAvailable != null && !IsRateLimited)
+            if (TokenBecameAvailable is not null && !IsRateLimited)
                 TokenBecameAvailable.Invoke(this);
         }
     }
-}

@@ -9,7 +9,8 @@ using Microsoft.Extensions.DependencyInjection;
 using {{packageName}}.{{clientPackage}};
 
 namespace {{packageName}}.Extensions
-{
+
+
     /// <summary>
     /// Extension methods for IServiceCollection
     /// </summary>
@@ -57,7 +58,7 @@ namespace {{packageName}}.Extensions
 
                 var provider = services.FirstOrDefault(s => s.ServiceType.IsAssignableFrom(typeof(TokenProvider<>).MakeGenericType(tokenType)));
 
-                if (provider == null)
+                if (provider is null)
                 {
                     services.AddSingleton(typeof(RateLimitProvider<>).MakeGenericType(tokenType));
                     services.AddSingleton(typeof(TokenProvider<>).MakeGenericType(tokenType), 
@@ -66,4 +67,4 @@ namespace {{packageName}}.Extensions
             }
         }
     }
-}
+

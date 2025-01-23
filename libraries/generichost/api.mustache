@@ -19,7 +19,8 @@ using {{packageName}}.{{modelPackage}};
 {{/hasImport}}
 
 namespace {{packageName}}.{{apiPackage}}
-{
+
+
     {{#operations}}
     /// <summary>
     /// Represents a collection of functions to interact with the API endpoints
@@ -148,7 +149,7 @@ namespace {{packageName}}.{{apiPackage}}
         /// Initializes a new instance of the <see cref="{{classname}}"/> class.
         /// </summary>
         /// <returns></returns>
-        public {{classname}}(ILogger<{{classname}}> logger, HttpClient httpClient, JsonSerializerOptionsProvider jsonSerializerOptionsProvider, {{classname}}Events {{#lambda.camelcase_param}}{{classname}}Events{{/lambda.camelcase_param}}{{#hasApiKeyMethods}},
+        public {{classname}}(ILogger<{{classname}}> logger, HttpClient httpClient, JsonSerializerOptionsProvider jsonSerializerOptionsProvider, {{classname}}Events {{#lambda.nameInCamelCase}}{{classname}}Events{{/lambda.nameInCamelCase}}{{#hasApiKeyMethods}},
             TokenProvider<ApiKeyToken> apiKeyProvider{{/hasApiKeyMethods}}{{#hasHttpBearerMethods}},
             TokenProvider<BearerToken> bearerTokenProvider{{/hasHttpBearerMethods}}{{#hasHttpBasicMethods}},
             TokenProvider<BasicToken> basicTokenProvider{{/hasHttpBasicMethods}}{{#hasHttpSignatureMethods}},
@@ -158,7 +159,7 @@ namespace {{packageName}}.{{apiPackage}}
             _jsonSerializerOptions = jsonSerializerOptionsProvider.Options;
             Logger = logger;
             HttpClient = httpClient;
-            Events = {{#lambda.camelcase_param}}{{classname}}Events{{/lambda.camelcase_param}};{{#hasApiKeyMethods}}
+            Events = {{#lambda.nameInCamelCase}}{{classname}}Events{{/lambda.nameInCamelCase}};{{#hasApiKeyMethods}}
             ApiKeyProvider = apiKeyProvider;{{/hasApiKeyMethods}}{{#hasHttpBearerMethods}}
             BearerTokenProvider = bearerTokenProvider;{{/hasHttpBearerMethods}}{{#hasHttpBasicMethods}}
             BasicTokenProvider = basicTokenProvider;{{/hasHttpBasicMethods}}{{#hasHttpSignatureMethods}}
@@ -187,14 +188,14 @@ namespace {{packageName}}.{{apiPackage}}
             {{#vendorExtensions.x-not-nullable-reference-types}}
             {{#required}}
             {{^vendorExtensions.x-is-value-type}}
-            if ({{paramName}} == null)
+            if ({{paramName}} is null)
                 throw new ArgumentNullException(nameof({{paramName}}));
 
             {{/vendorExtensions.x-is-value-type}}
             {{/required}}
             {{^required}}
             {{^vendorExtensions.x-is-value-type}}
-            if ({{paramName}}.IsSet && {{paramName}}.Value == null)
+            if ({{paramName}}.IsSet && {{paramName}}.Value is null)
                 throw new ArgumentNullException(nameof({{paramName}}));
 
             {{/vendorExtensions.x-is-value-type}}
@@ -479,7 +480,7 @@ namespace {{packageName}}.{{apiPackage}}
 
                     tokenBaseLocalVars.Add(httpSignatureTokenLocalVar);
 
-                    if (httpRequestMessageLocalVar.Content != null) {
+                    if (httpRequestMessageLocalVar.Content is not null) {
                         string requestBodyLocalVar = await httpRequestMessageLocalVar.Content.ReadAsStringAsync({{#net60OrLater}}cancellationToken{{/net60OrLater}}).ConfigureAwait(false);
 
                         httpSignatureTokenLocalVar.UseInHeader(httpRequestMessageLocalVar, requestBodyLocalVar, cancellationToken);
@@ -501,7 +502,7 @@ namespace {{packageName}}.{{apiPackage}}
 
                     string{{nrt?}} contentTypeLocalVar = ClientUtils.SelectHeaderContentType(contentTypes);
 
-                    if (contentTypeLocalVar != null && httpRequestMessageLocalVar.Content != null)
+                    if (contentTypeLocalVar is not null && httpRequestMessageLocalVar.Content is not null)
                         httpRequestMessageLocalVar.Content.Headers.ContentType = new MediaTypeHeaderValue(contentTypeLocalVar);
 
                     {{/-first}}
@@ -521,7 +522,7 @@ namespace {{packageName}}.{{apiPackage}}
 
                     string{{nrt?}} acceptLocalVar = ClientUtils.SelectHeaderAccept(acceptLocalVars);
 
-                    if (acceptLocalVar != null)
+                    if (acceptLocalVar is not null)
                         httpRequestMessageLocalVar.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(acceptLocalVar));
                     {{/-first}}
                     {{/produces}}
@@ -566,4 +567,4 @@ namespace {{packageName}}.{{apiPackage}}
         {{/operation}}
     }
     {{/operations}}
-}
+

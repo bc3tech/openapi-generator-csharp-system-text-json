@@ -11,7 +11,8 @@ using Polly.Extensions.Http;
 using Polly;{{/supportsRetry}}
 
 namespace {{packageName}}.Extensions
-{
+
+
     /// <summary>
     /// Extension methods for IHttpClientBuilder
     /// </summary>
@@ -72,4 +73,4 @@ namespace {{packageName}}.Extensions
                 => builder.CircuitBreakerAsync(handledEventsAllowedBeforeBreaking, durationOfBreak);
         {{/supportsRetry}}
     }
-}
+

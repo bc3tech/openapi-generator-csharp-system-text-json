@@ -14,7 +14,8 @@ using System.Text;
 using System.Web;
 
 namespace {{packageName}}.{{clientPackage}}
-{
+
+
     /// <summary>
     /// Class for HttpSigning auth related parameter and methods
     /// </summary>
@@ -82,9 +83,9 @@ namespace {{packageName}}.{{clientPackage}}
         /// <param name="request"></param>
         /// <param name="requestBody"></param>
         /// <param name="cancellationToken"></param>
-        internal Dictionary<string, string> GetHttpSignedHeader(System.Net.Http.HttpRequestMessage request, string requestBody, System.Threading.CancellationToken cancellationToken = default{{^netstandard20OrLater}}(System.Threading.CancellationToken){{/netstandard20OrLater}})
+        internal Dictionary<string, string> GetHttpSignedHeader(System.Net.Http.HttpRequestMessage request, string requestBody, System.Threading.CancellationToken cancellationToken = default)
         {
-            if (request.RequestUri == null)
+            if (request.RequestUri is null)
                 throw new NullReferenceException("The request URI was null");
 
             const string HEADER_REQUEST_TARGET = "(request-target)";
@@ -114,11 +115,11 @@ namespace {{packageName}}.{{clientPackage}}
             
             var httpSignatureHeader = new Dictionary<string, string{{nrt?}}>();
 
-            if (HttpSigningHeader.Count == 0)
+            if (HttpSigningHeader.Count is 0)
                 HttpSigningHeader.Add("(created)");
 
             var dateTime = DateTime.Now;
-            string digest = String.Empty;
+            string digest = string.Empty;
 
             if (HashAlgorithm == HashAlgorithmName.SHA256)
             {
@@ -176,7 +177,7 @@ namespace {{packageName}}.{{clientPackage}}
                         throw new Exception(string.Format("Cannot sign HTTP request.Request does not contain the {0} header.",header));
                 }
 
-            var headersKeysString = String.Join(" ", httpSignatureHeader.Keys);
+            var headersKeysString = string.Join(" ", httpSignatureHeader.Keys);
             var headerValuesList = new List<string>();
 
             foreach (var keyVal in httpSignatureHeader)
@@ -227,7 +228,7 @@ namespace {{packageName}}.{{clientPackage}}
             if (hashAlgorithmName == HashAlgorithmName.MD5)
                 hashAlgorithm = MD5.Create();
 
-            if (hashAlgorithm == null)
+            if (hashAlgorithm is null)
                 throw new NullReferenceException($"{ nameof(hashAlgorithm) } was null.");
 
             byte[] bytes = Encoding.UTF8.GetBytes(stringToBeHashed);
@@ -244,12 +245,12 @@ namespace {{packageName}}.{{clientPackage}}
 
         private string GetRSASignature(byte[] stringToSign)
         {
-            if (KeyPassPhrase == null)
+            if (KeyPassPhrase is null)
                 throw new NullReferenceException($"{ nameof(KeyPassPhrase) } was null.");
 
             RSA{{nrt?}} rsa = GetRSAProviderFromPemFile(KeyFilePath, KeyPassPhrase);
             
-            if (rsa == null)
+            if (rsa is null)
                 return string.Empty;
             else if (SigningAlgorithm == "RSASSA-PSS")
             {
@@ -284,7 +285,7 @@ namespace {{packageName}}.{{clientPackage}}
             var ecdsa = ECDsa.Create();
 
             var byteCount = 0;
-            if (KeyPassPhrase != null)
+            if (KeyPassPhrase is not null)
             {
                 IntPtr unmanagedString = IntPtr.Zero;
                 try
@@ -366,10 +367,10 @@ namespace {{packageName}}.{{clientPackage}}
             return derBytes.ToArray();
         }
 
-        private  RSACryptoServiceProvider{{nrt?}} GetRSAProviderFromPemFile(String pemfile, SecureString{{nrt?}} keyPassPhrase = null)
+        private  RSACryptoServiceProvider{{nrt?}} GetRSAProviderFromPemFile(string pemfile, SecureString{{nrt?}} keyPassPhrase = null)
         {
-            const String pempubheader = "-----BEGIN PUBLIC KEY-----";
-            const String pempubfooter = "-----END PUBLIC KEY-----";
+            const string pempubheader = "-----BEGIN PUBLIC KEY-----";
+            const string pempubfooter = "-----END PUBLIC KEY-----";
             bool isPrivateKeyFile = true;
             byte[]{{nrt?}} pemkey = null;
 
@@ -385,7 +386,7 @@ namespace {{packageName}}.{{clientPackage}}
             {
                 pemkey = ConvertPrivateKeyToBytes(pemstr, keyPassPhrase);
 
-                if (pemkey == null)
+                if (pemkey is null)
                     return null;
 
                 return DecodeRSAPrivateKey(pemkey);
@@ -393,11 +394,11 @@ namespace {{packageName}}.{{clientPackage}}
             return null;
         }
 
-        private byte[]{{nrt?}} ConvertPrivateKeyToBytes(String instr, SecureString{{nrt?}} keyPassPhrase = null)
+        private byte[]{{nrt?}} ConvertPrivateKeyToBytes(string instr, SecureString{{nrt?}} keyPassPhrase = null)
         {
-            const String pemprivheader = "-----BEGIN RSA PRIVATE KEY-----";
-            const String pemprivfooter = "-----END RSA PRIVATE KEY-----";
-            String pemstr = instr.Trim();
+            const string pemprivheader = "-----BEGIN RSA PRIVATE KEY-----";
+            const string pemprivfooter = "-----END RSA PRIVATE KEY-----";
+            string pemstr = instr.Trim();
             byte[] binkey;
 
             if (!pemstr.StartsWith(pemprivheader) || !pemstr.EndsWith(pemprivfooter))
@@ -406,7 +407,7 @@ namespace {{packageName}}.{{clientPackage}}
             StringBuilder sb = new StringBuilder(pemstr);
             sb.Replace(pemprivheader, "");
             sb.Replace(pemprivfooter, "");
-            String pvkstr = sb.ToString().Trim();
+            string pvkstr = sb.ToString().Trim();
 
             try
             {   // if there are no PEM encryption info lines, this is an UNencrypted PEM private key
@@ -421,11 +422,11 @@ namespace {{packageName}}.{{clientPackage}}
                 if (!str.ReadLine(){{nrt!}}.StartsWith("Proc-Type: 4,ENCRYPTED"))  // TODO: what do we do here if ReadLine is null?
                     return null;
                 
-                String saltline = str.ReadLine(){{nrt!}};  // TODO: what do we do here if ReadLine is null?
+                string saltline = str.ReadLine(){{nrt!}};  // TODO: what do we do here if ReadLine is null?
                 if (!saltline.StartsWith("DEK-Info: DES-EDE3-CBC,"))
                     return null;
                 
-                String saltstr = saltline.Substring(saltline.IndexOf(",") + 1).Trim();
+                string saltstr = saltline.Substring(saltline.IndexOf(",") + 1).Trim();
                 byte[] salt = new byte[saltstr.Length / 2];
                 for (int i = 0; i < salt.Length; i++)
                     salt[i] = Convert.ToByte(saltstr.Substring(i * 2, 2), 16);
@@ -434,7 +435,7 @@ namespace {{packageName}}.{{clientPackage}}
                     return null;
 
                 //------ remaining b64 data is encrypted RSA key ----
-                String encryptedstr = str.ReadToEnd();
+                string encryptedstr = str.ReadToEnd();
 
                 try
                 {   //should have b64 encrypted RSA key now
@@ -447,7 +448,7 @@ namespace {{packageName}}.{{clientPackage}}
 
                 // TODO: what do we do here if keyPassPhrase is null?
                 byte[] deskey = GetEncryptedKey(salt, keyPassPhrase{{nrt!}}, 1, 2);    // count=1 (for OpenSSL implementation); 2 iterations to get at least 24 bytes
-                if (deskey == null)
+                if (deskey is null)
                     return null;
 
                 //------ Decrypt the encrypted 3des-encrypted RSA private key ------
@@ -470,9 +471,9 @@ namespace {{packageName}}.{{clientPackage}}
             try
             {
                 twobytes = binr.ReadUInt16();
-                if (twobytes == 0x8130) //data read as little endian order (actual data order for Sequence is 30 81)
+                if (twobytes is 0x8130) //data read as little endian order (actual data order for Sequence is 30 81)
                     binr.ReadByte();    //advance 1 byte
-                else if (twobytes == 0x8230)
+                else if (twobytes is 0x8230)
                     binr.ReadInt16();   //advance 2 bytes
                 else
                     return null;
@@ -546,9 +547,9 @@ namespace {{packageName}}.{{clientPackage}}
             
             bt = binr.ReadByte();
 
-            if (bt == 0x81)
+            if (bt is 0x81)
                 count = binr.ReadByte();    // data size in next byte
-            else if (bt == 0x82)
+            else if (bt is 0x82)
             {
                 highbyte = binr.ReadByte(); // data size in next 2 bytes
                 lowbyte = binr.ReadByte();
@@ -558,7 +559,7 @@ namespace {{packageName}}.{{clientPackage}}
             else
                 count = bt;     // we already have the data size
             
-            while (binr.ReadByte() == 0x00)
+            while (binr.ReadByte() is 0x00)
                 //remove high order zeros in data
                 count -= 1;
             
@@ -592,7 +593,7 @@ namespace {{packageName}}.{{clientPackage}}
             for (int j = 0; j < miter; j++)
             {
                 // ----  Now hash consecutively for count times ------
-                if (j == 0)
+                if (j is 0)
                     result = data00;    //initialize
                 else
                 {
@@ -675,4 +676,4 @@ namespace {{packageName}}.{{clientPackage}}
             return keyType;
         }
     }
-}
+

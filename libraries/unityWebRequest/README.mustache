@@ -60,7 +60,8 @@ using {{packageName}}.Client;
 using {{packageName}}.{{modelPackage}};
 
 namespace {{packageName}}Example
-{
+
+
 {{#apiInfo}}{{#apis}}{{#-first}}{{#operations}}{{#operation}}{{#-first}}
     public class {{operationId}}Example : MonoBehaviour
     {
@@ -170,5 +171,4 @@ No model defined in this package
 {{#scopes}}  - {{scope}}: {{description}}
 {{/scopes}}
 {{/isOAuth}}
-
 {{/authMethods}}

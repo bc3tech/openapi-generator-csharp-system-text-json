@@ -4,7 +4,8 @@ using System;
 using UnityEngine.Networking;
 
 namespace {{packageName}}.Client
-{
+
+
     // Thrown when a backend doesn't return an expected response based on the expected type
     // of the response data.
     public class UnexpectedResponseException : Exception
@@ -23,4 +24,4 @@ namespace {{packageName}}.Client
             return $"httpcode={request.responseCode}, expected {type.Name} but got data: {extra}";
         }
     }
-}
+

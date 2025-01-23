@@ -10,7 +10,8 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace {{packageName}}.{{clientPackage}}
-{
+
+
     /// <summary>
     /// A token constructed with OAuth.
     /// </summary>
@@ -38,4 +39,3 @@ namespace {{packageName}}.{{clientPackage}}
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _raw);
         }
     }
-}

@@ -14,7 +14,8 @@ using {{packageName}}.{{apiPackage}};
 using {{packageName}}.{{modelPackage}};
 
 namespace {{packageName}}.{{clientPackage}}
-{
+
+
     /// <summary>
     /// Provides hosting configuration for {{packageName}}
     /// </summary>
@@ -86,14 +87,14 @@ namespace {{packageName}}.{{clientPackage}}
         (
             Action<HttpClient>{{nrt?}} client = null, Action<IHttpClientBuilder>{{nrt?}} builder = null)
         {
-            if (client == null)
+            if (client is null)
                 client = c => c.BaseAddress = new Uri(ClientUtils.BASE_ADDRESS);
 
             List<IHttpClientBuilder> builders = new List<IHttpClientBuilder>();
 
             {{#apiInfo}}{{#apis}}builders.Add(_services.AddHttpClient<{{interfacePrefix}}{{classname}}, {{classname}}>(client));
             {{/apis}}{{/apiInfo}}
-            if (builder != null)
+            if (builder is not null)
                 foreach (IHttpClientBuilder instance in builders)
                     builder(instance);
 
@@ -155,4 +156,4 @@ namespace {{packageName}}.{{clientPackage}}
             return this;
         }
     }
-}
+

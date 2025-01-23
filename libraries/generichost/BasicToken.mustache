@@ -10,7 +10,8 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace {{packageName}}.{{clientPackage}}
-{
+
+
     /// <summary>
     /// A token constructed from a username and password.
     /// </summary>
@@ -43,4 +44,3 @@ namespace {{packageName}}.{{clientPackage}}
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", {{packageName}}.Client.ClientUtils.Base64Encode(_username + ":" + _password));
         }
     }
-}
