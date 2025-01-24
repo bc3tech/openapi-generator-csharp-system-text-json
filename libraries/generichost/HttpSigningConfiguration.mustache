@@ -83,7 +83,7 @@ namespace {{packageName}}.{{clientPackage}}
         /// <param name="request"></param>
         /// <param name="requestBody"></param>
         /// <param name="cancellationToken"></param>
-        internal Dictionary<string, string> GetHttpSignedHeader(System.Net.Http.HttpRequestMessage request, string requestBody, System.Threading.CancellationToken cancellationToken = default)
+        internal Dictionary<string, string> GetHttpSignedHeader(System.Net.Http.HttpRequestMessage request, string requestBody, CancellationToken cancellationToken = default)
         {
             if (request.RequestUri is null)
                 throw new NullReferenceException("The request URI was null");
@@ -252,12 +252,12 @@ namespace {{packageName}}.{{clientPackage}}
             
             if (rsa is null)
                 return string.Empty;
-            else if (SigningAlgorithm == "RSASSA-PSS")
+            else if (SigningAlgorithm is "RSASSA-PSS")
             {
                 var signedbytes = rsa.SignHash(stringToSign, HashAlgorithm, RSASignaturePadding.Pss);
                 return Convert.ToBase64String(signedbytes);
             }
-            else if (SigningAlgorithm == "PKCS1-v15")
+            else if (SigningAlgorithm is "PKCS1-v15")
             {
                 var signedbytes = rsa.SignHash(stringToSign, HashAlgorithm, RSASignaturePadding.Pkcs1);
                 return Convert.ToBase64String(signedbytes);
@@ -431,7 +431,7 @@ namespace {{packageName}}.{{clientPackage}}
                 for (int i = 0; i < salt.Length; i++)
                     salt[i] = Convert.ToByte(saltstr.Substring(i * 2, 2), 16);
 
-                if (!(str.ReadLine() == ""))
+                if (!(str.ReadLine() is ""))
                     return null;
 
                 //------ remaining b64 data is encrypted RSA key ----

@@ -111,7 +111,7 @@ namespace {{packageName}}.Client
         var text = request.downloadHandler?.text;
         
         // Generated APIs that don't expect a return value provide System.object as the type
-        if (type == typeof(System.object) && (string.IsNullOrEmpty(text) || text.Trim() == "null"))
+        if (type == typeof(System.object) && (string.IsNullOrEmpty(text) || text.Trim() is "null"))
         {
           return null;
         }
@@ -223,7 +223,7 @@ namespace {{packageName}}.Client
       
       builder.AddQueryParameters(options.QueryParameters);
       
-      string contentType = null;
+      string? contentType = null;
       if (options.HeaderParameters is not null && options.HeaderParameters.ContainsKey("Content-Type"))
       {
         var contentTypes = options.HeaderParameters["Content-Type"];
@@ -231,9 +231,9 @@ namespace {{packageName}}.Client
       }
       
       var uri = builder.GetFullUri();
-      UnityWebRequest request = null;
+      UnityWebRequest? request = null;
       
-      if (contentType == "multipart/form-data")
+      if (contentType is "multipart/form-data")
       {
         var formData = new List<IMultipartFormSection>();
         foreach (var formParameter in options.FormParameters)
@@ -244,7 +244,7 @@ namespace {{packageName}}.Client
         request = UnityWebRequest.Post(uri, formData);
         request.method = method;
       }
-      else if (contentType == "application/x-www-form-urlencoded")
+      else if (contentType is "application/x-www-form-urlencoded")
       {
         var form = new WWWForm();
         foreach (var kvp in options.FormParameters)
@@ -352,7 +352,7 @@ namespace {{packageName}}.Client
     string path,
     RequestOptions options,
     IReadableConfiguration configuration,
-    System.Threading.CancellationToken cancellationToken = default
+    CancellationToken cancellationToken = default
     {
       var deserializer = new CustomJsonCodec(SerializerSettings, configuration);
       
@@ -404,7 +404,7 @@ namespace {{packageName}}.Client
         {
           responseData = (T) typeof(T).GetMethod("FromJson").Invoke(null, new object[] { new ByteArrayContent(request.downloadHandler.data) });
         }
-        else if (typeof(T).Name == "Stream") // for binary response
+        else if (typeof(T).Name is "Stream") // for binary response
         {
           responseData = (T) (object) new MemoryStream(request.downloadHandler.data);
         }
@@ -426,7 +426,7 @@ namespace {{packageName}}.Client
       /// GlobalConfiguration has been done before calling this method.</param>
       /// <param name="cancellationToken">Token that enables callers to cancel the request.</param>
       /// <returns>A Task containing ApiResponse</returns>
-      public Task<ApiResponse<T>> GetAsync<T>(string path, RequestOptions options, IReadableConfiguration configuration = null, System.Threading.CancellationToken cancellationToken = default
+      public Task<ApiResponse<T>> GetAsync<T>(string path, RequestOptions options, IReadableConfiguration? configuration = null, CancellationToken cancellationToken = default
       {
         var config = configuration ?? GlobalConfiguration.Instance;
         return ExecAsync<T>(NewRequest<T>("GET", path, options, config), path, options, config, cancellationToken);
@@ -441,7 +441,7 @@ namespace {{packageName}}.Client
       /// GlobalConfiguration has been done before calling this method.</param>
       /// <param name="cancellationToken">Token that enables callers to cancel the request.</param>
       /// <returns>A Task containing ApiResponse</returns>
-      public Task<ApiResponse<T>> PostAsync<T>(string path, RequestOptions options, IReadableConfiguration configuration = null, System.Threading.CancellationToken cancellationToken = default
+      public Task<ApiResponse<T>> PostAsync<T>(string path, RequestOptions options, IReadableConfiguration? configuration = null, CancellationToken cancellationToken = default
       {
         var config = configuration ?? GlobalConfiguration.Instance;
         return ExecAsync<T>(NewRequest<T>("POST", path, options, config), path, options, config, cancellationToken);
@@ -456,7 +456,7 @@ namespace {{packageName}}.Client
       /// GlobalConfiguration has been done before calling this method.</param>
       /// <param name="cancellationToken">Token that enables callers to cancel the request.</param>
       /// <returns>A Task containing ApiResponse</returns>
-      public Task<ApiResponse<T>> PutAsync<T>(string path, RequestOptions options, IReadableConfiguration configuration = null, System.Threading.CancellationToken cancellationToken = default
+      public Task<ApiResponse<T>> PutAsync<T>(string path, RequestOptions options, IReadableConfiguration? configuration = null, CancellationToken cancellationToken = default
       {
         var config = configuration ?? GlobalConfiguration.Instance;
         return ExecAsync<T>(NewRequest<T>("PUT", path, options, config), path, options, config, cancellationToken);
@@ -471,7 +471,7 @@ namespace {{packageName}}.Client
       /// GlobalConfiguration has been done before calling this method.</param>
       /// <param name="cancellationToken">Token that enables callers to cancel the request.</param>
       /// <returns>A Task containing ApiResponse</returns>
-      public Task<ApiResponse<T>> DeleteAsync<T>(string path, RequestOptions options, IReadableConfiguration configuration = null, System.Threading.CancellationToken cancellationToken = default
+      public Task<ApiResponse<T>> DeleteAsync<T>(string path, RequestOptions options, IReadableConfiguration? configuration = null, CancellationToken cancellationToken = default
       {
         var config = configuration ?? GlobalConfiguration.Instance;
         return ExecAsync<T>(NewRequest<T>("DELETE", path, options, config), path, options, config, cancellationToken);
@@ -486,7 +486,7 @@ namespace {{packageName}}.Client
       /// GlobalConfiguration has been done before calling this method.</param>
       /// <param name="cancellationToken">Token that enables callers to cancel the request.</param>
       /// <returns>A Task containing ApiResponse</returns>
-      public Task<ApiResponse<T>> HeadAsync<T>(string path, RequestOptions options, IReadableConfiguration configuration = null, System.Threading.CancellationToken cancellationToken = default
+      public Task<ApiResponse<T>> HeadAsync<T>(string path, RequestOptions options, IReadableConfiguration? configuration = null, CancellationToken cancellationToken = default
       {
         var config = configuration ?? GlobalConfiguration.Instance;
         return ExecAsync<T>(NewRequest<T>("HEAD", path, options, config), path, options, config, cancellationToken);
@@ -501,7 +501,7 @@ namespace {{packageName}}.Client
       /// GlobalConfiguration has been done before calling this method.</param>
       /// <param name="cancellationToken">Token that enables callers to cancel the request.</param>
       /// <returns>A Task containing ApiResponse</returns>
-      public Task<ApiResponse<T>> OptionsAsync<T>(string path, RequestOptions options, IReadableConfiguration configuration = null, System.Threading.CancellationToken cancellationToken = default
+      public Task<ApiResponse<T>> OptionsAsync<T>(string path, RequestOptions options, IReadableConfiguration? configuration = null, CancellationToken cancellationToken = default
       {
         var config = configuration ?? GlobalConfiguration.Instance;
         return ExecAsync<T>(NewRequest<T>("OPTIONS", path, options, config), path, options, config, cancellationToken);
@@ -516,7 +516,7 @@ namespace {{packageName}}.Client
       /// GlobalConfiguration has been done before calling this method.</param>
       /// <param name="cancellationToken">Token that enables callers to cancel the request.</param>
       /// <returns>A Task containing ApiResponse</returns>
-      public Task<ApiResponse<T>> PatchAsync<T>(string path, RequestOptions options, IReadableConfiguration configuration = null, System.Threading.CancellationToken cancellationToken = default
+      public Task<ApiResponse<T>> PatchAsync<T>(string path, RequestOptions options, IReadableConfiguration? configuration = null, CancellationToken cancellationToken = default
       {
         var config = configuration ?? GlobalConfiguration.Instance;
         return ExecAsync<T>(NewRequest<T>("PATCH", path, options, config), path, options, config, cancellationToken);
@@ -533,7 +533,7 @@ namespace {{packageName}}.Client
     /// <param name="configuration">A per-request configuration object. It is assumed that any merge with
     /// GlobalConfiguration has been done before calling this method.</param>
     /// <returns>A Task containing ApiResponse</returns>
-    public ApiResponse<T> Get<T>(string path, RequestOptions options, IReadableConfiguration configuration = null)
+    public ApiResponse<T> Get<T>(string path, RequestOptions options, IReadableConfiguration? configuration = null)
     {
       throw new System.NotImplementedException("UnityWebRequest does not support synchronous operation");
     }
@@ -546,7 +546,7 @@ namespace {{packageName}}.Client
     /// <param name="configuration">A per-request configuration object. It is assumed that any merge with
     /// GlobalConfiguration has been done before calling this method.</param>
     /// <returns>A Task containing ApiResponse</returns>
-    public ApiResponse<T> Post<T>(string path, RequestOptions options, IReadableConfiguration configuration = null)
+    public ApiResponse<T> Post<T>(string path, RequestOptions options, IReadableConfiguration? configuration = null)
     {
       throw new System.NotImplementedException("UnityWebRequest does not support synchronous operation");
     }
@@ -559,7 +559,7 @@ namespace {{packageName}}.Client
     /// <param name="configuration">A per-request configuration object. It is assumed that any merge with
     /// GlobalConfiguration has been done before calling this method.</param>
     /// <returns>A Task containing ApiResponse</returns>
-    public ApiResponse<T> Put<T>(string path, RequestOptions options, IReadableConfiguration configuration = null)
+    public ApiResponse<T> Put<T>(string path, RequestOptions options, IReadableConfiguration? configuration = null)
     {
       throw new System.NotImplementedException("UnityWebRequest does not support synchronous operation");
     }
@@ -572,7 +572,7 @@ namespace {{packageName}}.Client
     /// <param name="configuration">A per-request configuration object. It is assumed that any merge with
     /// GlobalConfiguration has been done before calling this method.</param>
     /// <returns>A Task containing ApiResponse</returns>
-    public ApiResponse<T> Delete<T>(string path, RequestOptions options, IReadableConfiguration configuration = null)
+    public ApiResponse<T> Delete<T>(string path, RequestOptions options, IReadableConfiguration? configuration = null)
     {
       throw new System.NotImplementedException("UnityWebRequest does not support synchronous operation");
     }
@@ -585,7 +585,7 @@ namespace {{packageName}}.Client
     /// <param name="configuration">A per-request configuration object. It is assumed that any merge with
     /// GlobalConfiguration has been done before calling this method.</param>
     /// <returns>A Task containing ApiResponse</returns>
-    public ApiResponse<T> Head<T>(string path, RequestOptions options, IReadableConfiguration configuration = null)
+    public ApiResponse<T> Head<T>(string path, RequestOptions options, IReadableConfiguration? configuration = null)
     {
       throw new System.NotImplementedException("UnityWebRequest does not support synchronous operation");
     }
@@ -598,7 +598,7 @@ namespace {{packageName}}.Client
     /// <param name="configuration">A per-request configuration object. It is assumed that any merge with
     /// GlobalConfiguration has been done before calling this method.</param>
     /// <returns>A Task containing ApiResponse</returns>
-    public ApiResponse<T> Options<T>(string path, RequestOptions options, IReadableConfiguration configuration = null)
+    public ApiResponse<T> Options<T>(string path, RequestOptions options, IReadableConfiguration? configuration = null)
     {
       throw new System.NotImplementedException("UnityWebRequest does not support synchronous operation");
     }
@@ -611,7 +611,7 @@ namespace {{packageName}}.Client
     /// <param name="configuration">A per-request configuration object. It is assumed that any merge with
     /// GlobalConfiguration has been done before calling this method.</param>
     /// <returns>A Task containing ApiResponse</returns>
-    public ApiResponse<T> Patch<T>(string path, RequestOptions options, IReadableConfiguration configuration = null)
+    public ApiResponse<T> Patch<T>(string path, RequestOptions options, IReadableConfiguration? configuration = null)
     {
       throw new System.NotImplementedException("UnityWebRequest does not support synchronous operation");
     }
