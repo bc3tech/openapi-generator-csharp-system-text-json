@@ -15,7 +15,7 @@
     {{/mappedModels}}
   {{/discriminator}}
 {{/useUnityWebRequest}}
-{{>visibility}}{{#hasRequired}}{{^hasOnlyReadOnly}} sealed{{/hasOnlyReadOnly}}{{/hasRequired}} partial class {{classname}}{{#lambda.firstDot}}{{#parent}} : .{{/parent}}{{#validatable}} : .{{/validatable}}{{#equatable}} : .{{/equatable}}{{/lambda.firstDot}}{{#lambda.joinWithComma}}{{#parent}}{{{.}}}  {{/parent}}{{#equatable}}IEquatable<{{classname}}>  {{/equatable}}{{#validatable}}IValidatableObject  {{/validatable}}{{/lambda.joinWithComma}}
+{{>visibility}}{{^hasRequired}}{{#hasOnlyReadOnly}} sealed{{/hasOnlyReadOnly}}{{/hasRequired}} partial class {{classname}}{{#lambda.firstDot}}{{#parent}} : .{{/parent}}{{#validatable}} : .{{/validatable}}{{#equatable}} : .{{/equatable}}{{/lambda.firstDot}}{{#lambda.joinWithComma}}{{#parent}}{{{.}}}  {{/parent}}{{#equatable}}IEquatable<{{classname}}>  {{/equatable}}{{#validatable}}IValidatableObject  {{/validatable}}{{/lambda.joinWithComma}}
 {
   {{#vars}}
     {{#items.isEnum}}
@@ -109,10 +109,11 @@
         {{/vars}}
         {{#hasRequired}}
           {{^hasOnlyReadOnly}}
+            // yup
             /// <summary>
             /// Initializes a new instance of the <see cref="{{classname}}" /> class.
             /// </summary>
-            [System.Text.Json.Serialization.JsonConstructor]
+            [JsonConstructor]
             protected {{classname}}() { {{#isAdditionalPropertiesTrue}}
             this.AdditionalProperties = new Dictionary<string, object>();{{/isAdditionalPropertiesTrue}}
           }
@@ -125,9 +126,9 @@
         /// <param name="{{nameInCamelCase}}">{{description}}{{^description}}{{nameInCamelCase}}{{/description}}{{#required}} (required){{/required}}{{#defaultValue}} (default to {{.}}){{/defaultValue}}.</param>
       {{/readWriteVars}}
       {{#hasOnlyReadOnly}}
-        [System.Text.Json.Serialization.JsonConstructor]
+        [JsonConstructor]
       {{/hasOnlyReadOnly}}
-      public {{classname}}({{#readWriteVars}}{{{datatypeWithEnum}}}{{#isEnum}}{{^isContainer}}{{^required}}?{{/required}}{{^defaultValue}}{{#required}}?{{/required}}{{/defaultValue}}{{/isContainer}}{{/isEnum}} {{nameInCamelCase}} = {{#defaultValue}}{{^isDateTime}}{{#isString}}{{^isEnum}}@{{/isEnum}}{{/isString}}{{{defaultValue}}}{{/isDateTime}}{{#isDateTime}}default{{/isDateTime}}{{/defaultValue}}{{^defaultValue}}default{{/defaultValue}}{{^-last}}, {{/-last}}{{/readWriteVars}}){{#parent}} : base({{#parentVars}}{{nameInCamelCase}}{{^-last}}, {{/-last}}{{/parentVars}}){{/parent}}
+      public {{classname}}({{#readWriteVars}}{{{datatypeWithEnum}}}{{#isEnum}}{{^isContainer}}{{^defaultValue}}{{/defaultValue}}{{/isContainer}}{{/isEnum}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}} {{nameInCamelCase}} = {{#defaultValue}}{{^isDateTime}}{{#isString}}{{^isEnum}}@{{/isEnum}}{{/isString}}{{{defaultValue}}}{{/isDateTime}}{{#isDateTime}}default{{/isDateTime}}{{/defaultValue}}{{^defaultValue}}default{{/defaultValue}}{{^-last}}, {{/-last}}{{/readWriteVars}}){{#parent}} : base({{#parentVars}}{{nameInCamelCase}}{{^-last}}, {{/-last}}{{/parentVars}}){{/parent}}
       {
         {{#vars}}
           {{^isInherited}}
@@ -211,17 +212,14 @@
                 {{#deprecated}}
                   [Obsolete]
                 {{/deprecated}}
-                public {{{dataType}}} {{name}} { get; {{#isReadOnly}}private {{/isReadOnly}}set; }
+                public {{{dataType}}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}} {{name}} { get; {{#isReadOnly}}private {{/isReadOnly}}set; }
                 
                 {{#isReadOnly}}
                   /// <summary>
                   /// Returns false as {{name}} should not be serialized given that it's read-only.
                   /// </summary>
                   /// <returns>false (boolean)</returns>
-                  public bool ShouldSerialize{{name}}()
-                  {
-                    return false;
-                  }
+                  public bool ShouldSerialize{{name}}() => false;
                 {{/isReadOnly}}
               {{/conditionalSerialization}}
               {{#conditionalSerialization}}
@@ -294,14 +292,14 @@
               {{/parent}}
               {{#vars}}
                 {{#isArray}}
-                  sb.Append("  {{name}}: ").AppendLine(string.Join(", ", {{name}}));
+                  sb.Append("  {{name}}: ").AppendLine($"{({{#nullableReferenceTypes}}{{name}} is null ? "[null]" : {{/nullableReferenceTypes}}string.Join(", ", {{name}}))}");
                 {{/isArray}}
                 {{^isArray}}
-                  sb.Append("  {{name}}: ").AppendLine({{name}});
+                  sb.Append("  {{name}}: ").AppendLine($"{ {{name}}{{#nullableReferenceTypes}} ?? "[null]"{{/nullableReferenceTypes}} }");
                 {{/isArray}}
               {{/vars}}
               {{#isAdditionalPropertiesTrue}}
-                sb.Append("  AdditionalProperties: ").AppendLine(AdditionalProperties);
+                sb.Append("  AdditionalProperties: ").AppendLine($"{AdditionalProperties{{#nullableReferenceTypes}} ?? "[null]"{{/nullableReferenceTypes}} }");
               {{/isAdditionalPropertiesTrue}}
               sb.AppendLine("}");
               return sb.ToString();
@@ -313,7 +311,7 @@
             /// <returns>JSON string presentation of the object</returns>
             public {{#parent}}{{^isArray}}{{^isMap}}override {{/isMap}}{{/isArray}}{{/parent}}string ToJson()
             {
-              return System.Text.Json.JsonSerializer.Serialize(this);
+              return JsonSerializer.Serialize(this);
             }{{#equatable}}
             
             /// <summary>

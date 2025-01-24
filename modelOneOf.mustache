@@ -24,7 +24,7 @@
             /// with the <see cref="{{#lambdaCref}}{{{dataType}}}{{/lambdaCref}}" /> class
             /// </summary>
             /// <param name="actualInstance">An instance of {{dataType}}.</param>
-            public {{classname}}({{{dataType}}} actualInstance)
+            public {{classname}}({{{dataType}}}{{^model.isNullable}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}}{{/model.isNullable}} actualInstance)
             {
               this.ActualInstance = actualInstance{{^model.isNullable}}{{^isPrimitiveType}} ?? throw new ArgumentException("Invalid instance found. Must not be null."){{/isPrimitiveType}}{{#isPrimitiveType}}{{#isArray}} ?? throw new ArgumentException("Invalid instance found. Must not be null."){{/isArray}}{{/isPrimitiveType}}{{#isPrimitiveType}}{{#isFreeFormObject}} ?? throw new ArgumentException("Invalid instance found. Must not be null."){{/isFreeFormObject}}{{/isPrimitiveType}}{{#isPrimitiveType}}{{#isString}} ?? throw new ArgumentException("Invalid instance found. Must not be null."){{/isString}}{{/isPrimitiveType}}{{/model.isNullable}};
             }
@@ -33,29 +33,37 @@
         {{/vendorExtensions.x-duplicated-data-type}}
       {{/composedSchemas.oneOf}}
       
-      private object _actualInstance;
+      private object{{^model.isNullable}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}}{{/model.isNullable}} _actualInstance;
       
       /// <summary>
       /// Gets or Sets ActualInstance
       /// </summary>
-      public override object ActualInstance
+      public override object{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}} ActualInstance
       {
-        get
-        {
-          return _actualInstance;
-        }
+        get => _actualInstance;
         set
         {
-          {{#oneOf}}
-            {{^-first}}else {{/-first}}if (value.GetType() == typeof({{{.}}}))
-              {
-                this._actualInstance = value;
-              }
-            {{/oneOf}}
+          {{#nullableReferenceTypes}}
+            if (value is null)
+            {
+              this._actualInstance = null;
+            }
             else
             {
-              throw new ArgumentException("Invalid instance found. Must be the following types:{{#oneOf}} {{{.}}}{{^-last}},{{/-last}}{{/oneOf}}");
-            }
+            {{/nullableReferenceTypes}}
+            {{#oneOf}}
+              {{^-first}}else {{/-first}}if (value.GetType() == typeof({{{.}}}))
+                {
+                  this._actualInstance = value;
+                }
+              {{/oneOf}}
+              else
+              {
+                throw new ArgumentException("Invalid instance found. Must be the following types:{{#oneOf}} {{{.}}}{{^-last}},{{/-last}}{{/oneOf}}");
+              }
+              {{#nullableReferenceTypes}}
+              }
+            {{/nullableReferenceTypes}}
           }
         }
         {{#composedSchemas.oneOf}}
@@ -92,19 +100,16 @@
         /// Returns the JSON string presentation of the object
         /// </summary>
         /// <returns>JSON string presentation of the object</returns>
-        public override string ToJson()
-        {
-          return JsonSerializer.Serialize(this.ActualInstance, {{classname}}.SerializerSettings);
-        }
+        public override string ToJson() => JsonSerializer.Serialize(this.ActualInstance, {{classname}}.SerializerSettings);
         
         /// <summary>
         /// Converts the JSON string into an instance of {{classname}}
         /// </summary>
         /// <param name="jsonString">JSON string</param>
         /// <returns>An instance of {{classname}}</returns>
-        public static {{classname}} FromJson(string jsonString)
+        public static {{classname}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}} FromJson(string jsonString)
         {
-          {{classname}} new{{classname}} = null;
+          {{classname}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}} new{{classname}} = null;
           
           if (string.IsNullOrEmpty(jsonString))
           {
@@ -201,7 +206,9 @@
           {{/useCompareNetObjects}}
           {{^useCompareNetObjects}}
             if (input is null)
-            return false;
+            {
+              return false;
+            }
             
             return this.ActualInstance.Equals(input.ActualInstance);
           {{/useCompareNetObjects}}
@@ -217,7 +224,10 @@
           {
             int hashCode = 41;
             if (this.ActualInstance is not null)
-            hashCode = hashCode * 59 + this.ActualInstance.GetHashCode();
+            {
+              hashCode = hashCode * 59 + this.ActualInstance.GetHashCode();
+            }
+            
             return hashCode;
           }
         }

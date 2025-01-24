@@ -35,7 +35,7 @@ using System.Text.Json.Serialization;
   /// <summary>
   /// Gets or Sets the actual instance
   /// </summary>
-  public abstract object ActualInstance { get; set; }
+  public abstract object{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}} ActualInstance { get; set; }
   
   /// <summary>
   /// Gets or Sets IsNullable to indicate whether the instance is nullable

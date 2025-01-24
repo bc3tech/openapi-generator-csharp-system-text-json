@@ -155,7 +155,7 @@ internal class CustomJsonCodec
 /// </summary>
 {{>visibility}} sealed partial class ApiClient : ISynchronousClient{{#supportsAsync}}, IAsynchronousClient{{/supportsAsync}}
 {
-  private readonly string? _baseUrl;
+  private readonly string _baseUrl;
   
   private readonly HttpClientHandler? _httpClientHandler;
   private readonly HttpClient _httpClient;
@@ -236,7 +236,7 @@ internal class CustomJsonCodec
     var multipartContent = new MultipartFormDataContent(boundary);
     foreach (var formParameter in options.FormParameters.Where(p => p.Value is not null))
     {
-      multipartContent.Add(new StringContent(formParameter.Value), formParameter.Key);
+      multipartContent.Add(new StringContent(formParameter.Value{{#nullableReferenceTypes}}!{{/nullableReferenceTypes}}), formParameter.Key);
     }
     {{#supportsFileParameters}}
       
@@ -275,11 +275,11 @@ internal class CustomJsonCodec
     ArgumentNullException.ThrowIfNull(options);
     ArgumentNullException.ThrowIfNull(configuration);
     
-    WebRequestPathBuilder builder = new WebRequestPathBuilder(_baseUrl, path);
+    WebRequestPathBuilder builder = new(_baseUrl, path);
     builder.AddPathParameters(options.PathParameters);
     builder.AddQueryParameters(options.QueryParameters);
     
-    HttpRequestMessage request = new HttpRequestMessage(method, builder.GetFullUri());
+    HttpRequestMessage request = new(method, builder.GetFullUri());
     
     if (configuration.UserAgent is not null)
     {
@@ -309,7 +309,7 @@ internal class CustomJsonCodec
     List<Tuple<HttpContent, string, string>> contentList = new List<Tuple<HttpContent, string, string>>();
     
     string? contentType = null;
-    if (options.HeaderParameters is not null && options.HeaderParameters.TryGetValue("Content-Type", out IList<string?> contentTypes))
+    if (options.HeaderParameters is not null && options.HeaderParameters.TryGetValue("Content-Type", out var contentTypes) && contentTypes is not null)
     {
       contentType = contentTypes.FirstOrDefault();
     }
@@ -346,7 +346,7 @@ internal class CustomJsonCodec
     // TODO provide an alternative that allows cookies per request instead of per API client
     if (options.Cookies is not null && options.Cookies.Count > 0)
     {
-      request.Properties["CookieContainer"] = options.Cookies;
+      request.Options.Set(new HttpRequestOptionsKey<List<Cookie>>("CookieContainer"), options.Cookies);
     }
     
     return request;
@@ -440,8 +440,7 @@ internal class CustomJsonCodec
         _httpClientHandler.ClientCertificates.AddRange(configuration.ClientCertificates);
       }
       
-      var cookieContainer = req.Properties.TryGetValue("CookieContainer", out object? value) ? value as List<Cookie> : null;
-      if (cookieContainer is not null)
+      if (req.Options.TryGetValue(new HttpRequestOptionsKey<List<Cookie>>("CookieContainer"), out var cookieContainer) && cookieContainer is not null)
       {
         if(_httpClientHandler is null)
         {
