@@ -124,7 +124,7 @@ using {{packageName}}.Client;
       /// Initializes a new instance of the <see cref="{{classname}}"/> class.
       /// </summary>
       /// <returns></returns>
-      public {{classname}}() : this((string)null)
+      public {{classname}}() : this(default)
       {
       }
       
@@ -132,7 +132,7 @@ using {{packageName}}.Client;
       /// Initializes a new instance of the <see cref="{{classname}}"/> class.
       /// </summary>
       /// <returns></returns>
-      public {{classname}}(string basePath)
+      public {{classname}}(string? basePath)
       {
         this.Configuration = {{packageName}}.Client.Configuration.MergeConfigurations(
         {{packageName}}.Client.GlobalConfiguration.Instance,
@@ -205,7 +205,7 @@ using {{packageName}}.Client;
       /// Gets the base path of the API client.
       /// </summary>
       /// <value>The base path</value>
-      public string GetBasePath()
+      public string? GetBasePath()
       {
         return this.Configuration.BasePath;
       }
@@ -484,10 +484,10 @@ using {{packageName}}.Client;
             {{/authMethods}}
             
             // make the HTTP request
-            var localVarResponse = this.Client.{{#lambda.titlecase}}{{#lambda.lowercase}}{{httpMethod}}{{/lambda.lowercase}}{{/lambda.titlecase}}<{{{returnType}}}{{^returnType}}object{{/returnType}}>("{{{path}}}", localVarRequestOptions, this.Configuration);
+            var localVarResponse = this.Client.{{#lambda.titlecase}}{{#lambda.lowercase}}{{httpMethod}}{{/lambda.lowercase}}{{/lambda.titlecase}}<{{{returnType}}}{{^returnType}}object{{/returnType}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}}>("{{{path}}}", localVarRequestOptions, this.Configuration);
             if (this.ExceptionFactory is not null)
             {
-              Exception _exception = this.ExceptionFactory("{{operationId}}", localVarResponse);
+              var _exception = this.ExceptionFactory("{{operationId}}", localVarResponse);
               if (_exception is not null)
               {
                 throw _exception;
@@ -512,7 +512,7 @@ using {{packageName}}.Client;
             {{/isDeprecated}}
             {{#returnType}}public async System.Threading.Tasks.Task<{{{.}}}>{{/returnType}}{{^returnType}}public async System.Threading.Tasks.Task{{/returnType}} {{operationId}}Async({{#allParams}}{{{dataType}}} {{paramName}}{{^required}}{{#optionalMethodArgument}} = default{{/optionalMethodArgument}}{{/required}}{{/allParams}})
               {
-                {{#returnType}}{{packageName}}.Client.ApiResponse<{{{returnType}}}> localVarResponse = await {{operationId}}WithHttpInfoAsync({{#allParams}}{{paramName}}{{^-last}}, {{/-last}}{{/allParams}}{{#allParams.0}}, {{/allParams.0}}operationIndex, cancellationToken).ConfigureAwait(false);
+                {{#returnType}}{{packageName}}.Client.ApiResponse<{{#returnType}}{{{.}}}{{/returnType}}> localVarResponse = await {{operationId}}WithHttpInfoAsync({{#allParams}}{{paramName}}{{^-last}}, {{/-last}}{{/allParams}}{{#allParams.0}}, {{/allParams.0}}operationIndex, cancellationToken).ConfigureAwait(false);
                   return localVarResponse.Data;{{/returnType}}{{^returnType}}await {{operationId}}WithHttpInfoAsync({{#allParams}}{{paramName}}{{^-last}}, {{/-last}}{{/allParams}}{{#allParams.0}}, {{/allParams.0}}operationIndex, cancellationToken).ConfigureAwait(false);{{/returnType}}
                 }
                 
@@ -750,7 +750,7 @@ using {{packageName}}.Client;
                   
                   if (this.ExceptionFactory is not null)
                   {
-                    Exception _exception = this.ExceptionFactory("{{operationId}}", localVarResponse);
+                    var _exception = this.ExceptionFactory("{{operationId}}", localVarResponse);
                     if (_exception is not null)
                     {
                       throw _exception;

@@ -41,7 +41,7 @@ namespace {{packageName}}.{{clientPackage}} {{^netStandard}}
             for (int i = 0; i < _tokens.Length; i++)
                 _tokens[i].TokenBecameAvailable += ((sender) => AvailableTokens.Writer.TryWrite((TTokenBase) sender));
         }
-        internal override async System.Threading.Tasks.ValueTask<TTokenBase> GetAsync(System.Threading.CancellationToken cancellation = default)
+        internal override async System.Threading.Tasks.ValueTask<TTokenBase> GetAsync(CancellationToken cancellation = default)
             => await AvailableTokens.Reader.ReadAsync(cancellation).ConfigureAwait(false);
     }
 } {{/netStandard}}{{#netStandard}}
@@ -77,13 +77,13 @@ namespace {{packageName}}.{{clientPackage}} {{^netStandard}}
             }
         }
 
-        internal override async System.Threading.Tasks.ValueTask<TTokenBase> GetAsync(System.Threading.CancellationToken cancellation = default)
+        internal override async System.Threading.Tasks.ValueTask<TTokenBase> GetAsync(CancellationToken cancellation = default)
         {
             await _semaphore.WaitAsync().ConfigureAwait(false);
 
             try
             {
-                TTokenBase result = null;
+                TTokenBase? result = null;
                 
                 while (result is null)
                 {
