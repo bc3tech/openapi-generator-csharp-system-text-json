@@ -20,6 +20,7 @@ public interface ISynchronousClient
   /// <param name="configuration">Per-request configurable settings.</param>
   /// <typeparam name="T">The return type.</typeparam>
   /// <returns>The response data, decorated with <see cref="ApiResponse{T}"/></returns>
+  [System.Diagnostics.CodeAnalysis.SuppressMessage("Naming", "CA1716:Identifiers should not match keywords", Justification = "No")]
   ApiResponse<T> Get<T>(string path, RequestOptions options, IReadableConfiguration? configuration = null);
   
   /// <summary>
