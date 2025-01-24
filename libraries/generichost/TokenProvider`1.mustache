@@ -22,7 +22,7 @@ namespace {{packageName}}
         /// </summary>
         protected TTokenBase[] _tokens;
 
-        internal abstract System.Threading.Tasks.ValueTask<TTokenBase> GetAsync(System.Threading.CancellationToken cancellation = default);
+        internal abstract System.Threading.Tasks.ValueTask<TTokenBase> GetAsync(CancellationToken cancellation = default);
 
         /// <summary>
         /// Instantiates a TokenProvider.
