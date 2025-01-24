@@ -15,7 +15,7 @@
     {{/mappedModels}}
   {{/discriminator}}
 {{/useUnityWebRequest}}
-{{>visibility}} partial class {{classname}}{{#lambda.firstDot}}{{#parent}} : .{{/parent}}{{#validatable}} : .{{/validatable}}{{#equatable}} : .{{/equatable}}{{/lambda.firstDot}}{{#lambda.joinWithComma}}{{#parent}}{{{.}}}  {{/parent}}{{#equatable}}IEquatable<{{classname}}>  {{/equatable}}{{#validatable}}IValidatableObject  {{/validatable}}{{/lambda.joinWithComma}}
+{{>visibility}}{{#hasRequired}}{{^hasOnlyReadOnly}} sealed{{/hasOnlyReadOnly}}{{/hasRequired}} partial class {{classname}}{{#lambda.firstDot}}{{#parent}} : .{{/parent}}{{#validatable}} : .{{/validatable}}{{#equatable}} : .{{/equatable}}{{/lambda.firstDot}}{{#lambda.joinWithComma}}{{#parent}}{{{.}}}  {{/parent}}{{#equatable}}IEquatable<{{classname}}>  {{/equatable}}{{#validatable}}IValidatableObject  {{/validatable}}{{/lambda.joinWithComma}}
 {
   {{#vars}}
     {{#items.isEnum}}
@@ -54,10 +54,7 @@
             /// Returns false as {{name}} should not be serialized given that it's read-only.
             /// </summary>
             /// <returns>false (boolean)</returns>
-            public bool ShouldSerialize{{name}}()
-            {
-              return false;
-            }
+            public bool ShouldSerialize{{name}}() => false;
           {{/isReadOnly}}
         {{/conditionalSerialization}}
         {{#conditionalSerialization}}
@@ -116,113 +113,126 @@
             /// Initializes a new instance of the <see cref="{{classname}}" /> class.
             /// </summary>
             [System.Text.Json.Serialization.JsonConstructor]
-            {{^isAdditionalPropertiesTrue}}
-              protected {{classname}}() { }
-            {{/isAdditionalPropertiesTrue}}
-            {{#isAdditionalPropertiesTrue}}
-              protected {{classname}}()
-              {
-                this.AdditionalProperties = new Dictionary<string, object>();
-              }
-            {{/isAdditionalPropertiesTrue}}
-          {{/hasOnlyReadOnly}}
-        {{/hasRequired}}
-        /// <summary>
-        /// Initializes a new instance of the <see cref="{{classname}}" /> class.
-        /// </summary>
-        {{#readWriteVars}}
-          /// <param name="{{nameInCamelCase}}">{{description}}{{^description}}{{nameInCamelCase}}{{/description}}{{#required}} (required){{/required}}{{#defaultValue}} (default to {{.}}){{/defaultValue}}.</param>
-        {{/readWriteVars}}
-        {{#hasOnlyReadOnly}}
-          [System.Text.Json.Serialization.JsonConstructor]
+            protected {{classname}}() { {{#isAdditionalPropertiesTrue}}
+            this.AdditionalProperties = new Dictionary<string, object>();{{/isAdditionalPropertiesTrue}}
+          }
         {{/hasOnlyReadOnly}}
-        public {{classname}}({{#readWriteVars}}{{{datatypeWithEnum}}}{{#isEnum}}{{^isContainer}}{{^required}}?{{/required}}{{/isContainer}}{{/isEnum}} {{nameInCamelCase}} = {{#defaultValue}}{{^isDateTime}}{{#isString}}{{^isEnum}}@{{/isEnum}}{{/isString}}{{{defaultValue}}}{{/isDateTime}}{{#isDateTime}}default{{/isDateTime}}{{/defaultValue}}{{^defaultValue}}default{{/defaultValue}}{{^-last}}, {{/-last}}{{/readWriteVars}}){{#parent}} : base({{#parentVars}}{{nameInCamelCase}}{{^-last}}, {{/-last}}{{/parentVars}}){{/parent}}
-        {
-          {{#vars}}
-            {{^isInherited}}
-              {{^isReadOnly}}
-                {{#required}}
-                  {{^conditionalSerialization}}
-                    {{^vendorExtensions.x-csharp-value-type}}
-                      // to ensure "{{nameInCamelCase}}" is required (not null)
-                      ArgumentNullException.ThrowIfNull({{nameInCamelCase}});
-                      this.{{name}} = {{nameInCamelCase}};
-                    {{/vendorExtensions.x-csharp-value-type}}
-                    {{#vendorExtensions.x-csharp-value-type}}
-                      this.{{name}} = {{nameInCamelCase}};
-                    {{/vendorExtensions.x-csharp-value-type}}
-                  {{/conditionalSerialization}}
-                  {{#conditionalSerialization}}
-                    {{^vendorExtensions.x-csharp-value-type}}
-                      
-                      // to ensure "{{nameInCamelCase}}" is required (not null)
-                      ArgumentNullException.ThrowIfNull({{nameInCamelCase}});
-                      this._{{name}} = {{nameInCamelCase}};
-                    {{/vendorExtensions.x-csharp-value-type}}
-                    {{#vendorExtensions.x-csharp-value-type}}
-                      this._{{name}} = {{nameInCamelCase}};
-                    {{/vendorExtensions.x-csharp-value-type}}
-                  {{/conditionalSerialization}}
-                {{/required}}
-              {{/isReadOnly}}
-            {{/isInherited}}
-          {{/vars}}
-          {{#vars}}
-            {{^isInherited}}
-              {{^isReadOnly}}
-                {{^required}}
-                  {{#defaultValue}}
-                    {{^conditionalSerialization}}
-                      {{^vendorExtensions.x-csharp-value-type}}
-                        // use default value if no "{{nameInCamelCase}}" provided
-                        this.{{name}} = {{nameInCamelCase}} ?? {{#isString}}@{{/isString}}{{{defaultValue}}};
-                      {{/vendorExtensions.x-csharp-value-type}}
-                      {{#vendorExtensions.x-csharp-value-type}}
-                        this.{{name}} = {{nameInCamelCase}};
-                      {{/vendorExtensions.x-csharp-value-type}}
-                    {{/conditionalSerialization}}
-                  {{/defaultValue}}
-                  {{^defaultValue}}
-                    {{^conditionalSerialization}}
-                      this.{{name}} = {{nameInCamelCase}};
-                    {{/conditionalSerialization}}
-                    {{#conditionalSerialization}}
-                      this._{{name}} = {{nameInCamelCase}};
-                      if (this.{{name}} is not null)
-                      {
-                        this._flag{{name}} = true;
-                      }
-                    {{/conditionalSerialization}}
-                  {{/defaultValue}}
-                {{/required}}
-              {{/isReadOnly}}
-            {{/isInherited}}
-          {{/vars}}
-          {{#isAdditionalPropertiesTrue}}
-            
-            this.AdditionalProperties = new Dictionary<string, object>();
-          {{/isAdditionalPropertiesTrue}}
-        }
-        
+      {{/hasRequired}}
+      /// <summary>
+      /// Initializes a new instance of the <see cref="{{classname}}" /> class.
+      /// </summary>
+      {{#readWriteVars}}
+        /// <param name="{{nameInCamelCase}}">{{description}}{{^description}}{{nameInCamelCase}}{{/description}}{{#required}} (required){{/required}}{{#defaultValue}} (default to {{.}}){{/defaultValue}}.</param>
+      {{/readWriteVars}}
+      {{#hasOnlyReadOnly}}
+        [System.Text.Json.Serialization.JsonConstructor]
+      {{/hasOnlyReadOnly}}
+      public {{classname}}({{#readWriteVars}}{{{datatypeWithEnum}}}{{#isEnum}}{{^isContainer}}{{^required}}?{{/required}}{{^defaultValue}}{{#required}}?{{/required}}{{/defaultValue}}{{/isContainer}}{{/isEnum}} {{nameInCamelCase}} = {{#defaultValue}}{{^isDateTime}}{{#isString}}{{^isEnum}}@{{/isEnum}}{{/isString}}{{{defaultValue}}}{{/isDateTime}}{{#isDateTime}}default{{/isDateTime}}{{/defaultValue}}{{^defaultValue}}default{{/defaultValue}}{{^-last}}, {{/-last}}{{/readWriteVars}}){{#parent}} : base({{#parentVars}}{{nameInCamelCase}}{{^-last}}, {{/-last}}{{/parentVars}}){{/parent}}
+      {
         {{#vars}}
           {{^isInherited}}
-            {{^isEnum}}
-              /// <summary>
-              /// {{description}}{{^description}}Gets or Sets {{{name}}}{{/description}}
-              /// </summary>{{#description}}
-              /// <value>{{.}}</value>{{/description}}
-              {{#example}}
-                /// <example>{{.}}</example>
-              {{/example}}
-              {{^conditionalSerialization}}
-                {{#required}}[JsonRequired]{{/required}}
-                  [JsonPropertyName("{{baseName}}")]
-                  {{#deprecated}}
-                    [Obsolete]
-                  {{/deprecated}}
-                  public {{{dataType}}} {{name}} { get; {{#isReadOnly}}private {{/isReadOnly}}set; }
-                  
-                  {{#isReadOnly}}
+            {{^isReadOnly}}
+              {{#required}}
+                {{^conditionalSerialization}}
+                  {{^vendorExtensions.x-csharp-value-type}}
+                    // to ensure "{{nameInCamelCase}}" is required (not null)
+                    ArgumentNullException.ThrowIfNull({{nameInCamelCase}});
+                    this.{{name}} = {{nameInCamelCase}};
+                  {{/vendorExtensions.x-csharp-value-type}}
+                  {{#vendorExtensions.x-csharp-value-type}}
+                    this.{{name}} = {{nameInCamelCase}};
+                  {{/vendorExtensions.x-csharp-value-type}}
+                {{/conditionalSerialization}}
+                {{#conditionalSerialization}}
+                  {{^vendorExtensions.x-csharp-value-type}}
+                    
+                    // to ensure "{{nameInCamelCase}}" is required (not null)
+                    ArgumentNullException.ThrowIfNull({{nameInCamelCase}});
+                    this._{{name}} = {{nameInCamelCase}};
+                  {{/vendorExtensions.x-csharp-value-type}}
+                  {{#vendorExtensions.x-csharp-value-type}}
+                    this._{{name}} = {{nameInCamelCase}};
+                  {{/vendorExtensions.x-csharp-value-type}}
+                {{/conditionalSerialization}}
+              {{/required}}
+            {{/isReadOnly}}
+          {{/isInherited}}
+        {{/vars}}
+        {{#vars}}
+          {{^isInherited}}
+            {{^isReadOnly}}
+              {{^required}}
+                {{#defaultValue}}
+                  {{^conditionalSerialization}}
+                    {{^vendorExtensions.x-csharp-value-type}}
+                      // use default value if no "{{nameInCamelCase}}" provided
+                      this.{{name}} = {{nameInCamelCase}} ?? {{#isString}}@{{/isString}}{{{defaultValue}}};
+                    {{/vendorExtensions.x-csharp-value-type}}
+                    {{#vendorExtensions.x-csharp-value-type}}
+                      this.{{name}} = {{nameInCamelCase}};
+                    {{/vendorExtensions.x-csharp-value-type}}
+                  {{/conditionalSerialization}}
+                {{/defaultValue}}
+                {{^defaultValue}}
+                  {{^conditionalSerialization}}
+                    this.{{name}} = {{nameInCamelCase}};
+                  {{/conditionalSerialization}}
+                  {{#conditionalSerialization}}
+                    this._{{name}} = {{nameInCamelCase}};
+                    if (this.{{name}} is not null)
+                    {
+                      this._flag{{name}} = true;
+                    }
+                  {{/conditionalSerialization}}
+                {{/defaultValue}}
+              {{/required}}
+            {{/isReadOnly}}
+          {{/isInherited}}
+        {{/vars}}
+        {{#isAdditionalPropertiesTrue}}
+          
+          this.AdditionalProperties = new Dictionary<string, object>();
+        {{/isAdditionalPropertiesTrue}}
+      }
+      
+      {{#vars}}
+        {{^isInherited}}
+          {{^isEnum}}
+            /// <summary>
+            /// {{description}}{{^description}}Gets or Sets {{{name}}}{{/description}}
+            /// </summary>{{#description}}
+            /// <value>{{.}}</value>{{/description}}
+            {{#example}}
+              /// <example>{{.}}</example>
+            {{/example}}
+            {{^conditionalSerialization}}
+              {{#required}}[JsonRequired]{{/required}}
+                [JsonPropertyName("{{baseName}}")]
+                {{#deprecated}}
+                  [Obsolete]
+                {{/deprecated}}
+                public {{{dataType}}} {{name}} { get; {{#isReadOnly}}private {{/isReadOnly}}set; }
+                
+                {{#isReadOnly}}
+                  /// <summary>
+                  /// Returns false as {{name}} should not be serialized given that it's read-only.
+                  /// </summary>
+                  /// <returns>false (boolean)</returns>
+                  public bool ShouldSerialize{{name}}()
+                  {
+                    return false;
+                  }
+                {{/isReadOnly}}
+              {{/conditionalSerialization}}
+              {{#conditionalSerialization}}
+                {{#isReadOnly}}
+                  {{#required}}[JsonRequired]{{/required}}
+                    [JsonPropertyName("{{baseName}}")]
+                    {{#deprecated}}
+                      [Obsolete]
+                    {{/deprecated}}
+                    public {{{dataType}}} {{name}} { get; private set; }
+                    
                     /// <summary>
                     /// Returns false as {{name}} should not be serialized given that it's read-only.
                     /// </summary>
@@ -232,15 +242,23 @@
                       return false;
                     }
                   {{/isReadOnly}}
-                {{/conditionalSerialization}}
-                {{#conditionalSerialization}}
-                  {{#isReadOnly}}
+                  {{^isReadOnly}}
                     {{#required}}[JsonRequired]{{/required}}
                       [JsonPropertyName("{{baseName}}")]
                       {{#deprecated}}
                         [Obsolete]
                       {{/deprecated}}
-                      public {{{dataType}}} {{name}} { get; private set; }
+                      public {{{dataType}}} {{name}}
+                      {
+                        get{ return _{{name}};}
+                        set
+                        {
+                          _{{name}} = value;
+                          _flag{{name}} = true;
+                        }
+                      }
+                      private {{{dataType}}} _{{name}};
+                      private bool _flag{{name}};
                       
                       /// <summary>
                       /// Returns false as {{name}} should not be serialized given that it's read-only.
@@ -248,169 +266,142 @@
                       /// <returns>false (boolean)</returns>
                       public bool ShouldSerialize{{name}}()
                       {
-                        return false;
+                        return _flag{{name}};
                       }
                     {{/isReadOnly}}
-                    {{^isReadOnly}}
-                      {{#required}}[JsonRequired]{{/required}}
-                        [JsonPropertyName("{{baseName}}")]
-                        {{#deprecated}}
-                          [Obsolete]
-                        {{/deprecated}}
-                        public {{{dataType}}} {{name}}
-                        {
-                          get{ return _{{name}};}
-                          set
-                          {
-                            _{{name}} = value;
-                            _flag{{name}} = true;
-                          }
-                        }
-                        private {{{dataType}}} _{{name}};
-                        private bool _flag{{name}};
-                        
-                        /// <summary>
-                        /// Returns false as {{name}} should not be serialized given that it's read-only.
-                        /// </summary>
-                        /// <returns>false (boolean)</returns>
-                        public bool ShouldSerialize{{name}}()
-                        {
-                          return _flag{{name}};
-                        }
-                      {{/isReadOnly}}
-                    {{/conditionalSerialization}}
-                  {{/isEnum}}
-                {{/isInherited}}
+                  {{/conditionalSerialization}}
+                {{/isEnum}}
+              {{/isInherited}}
+            {{/vars}}
+            {{#isAdditionalPropertiesTrue}}
+              /// <summary>
+              /// Gets or Sets additional properties
+              /// </summary>
+              [JsonExtensionData]
+              public IDictionary<string, object> AdditionalProperties { get; set; }
+              
+            {{/isAdditionalPropertiesTrue}}
+            /// <summary>
+            /// Returns the string presentation of the object
+            /// </summary>
+            /// <returns>string presentation of the object</returns>
+            public override string ToString()
+            {
+              StringBuilder sb = new StringBuilder();
+              sb.AppendLine("class {{classname}} {");
+              {{#parent}}
+                sb.Append("  ").Append(base.ToString().Replace("\n", "\n  ")).AppendLine();
+              {{/parent}}
+              {{#vars}}
+                {{#isArray}}
+                  sb.Append("  {{name}}: ").AppendLine(string.Join(", ", {{name}}));
+                {{/isArray}}
+                {{^isArray}}
+                  sb.Append("  {{name}}: ").AppendLine({{name}});
+                {{/isArray}}
               {{/vars}}
               {{#isAdditionalPropertiesTrue}}
-                /// <summary>
-                /// Gets or Sets additional properties
-                /// </summary>
-                [JsonExtensionData]
-                public IDictionary<string, object> AdditionalProperties { get; set; }
-                
+                sb.Append("  AdditionalProperties: ").AppendLine(AdditionalProperties);
               {{/isAdditionalPropertiesTrue}}
-              /// <summary>
-              /// Returns the string presentation of the object
-              /// </summary>
-              /// <returns>string presentation of the object</returns>
-              public override string ToString()
-              {
-                StringBuilder sb = new StringBuilder();
-                sb.AppendLine("class {{classname}} {");
-                {{#parent}}
-                  sb.Append("  ").Append(base.ToString().Replace("\n", "\n  ")).AppendLine();
-                {{/parent}}
-                {{#vars}}
-                  {{#isArray}}
-                    sb.Append("  {{name}}: ").AppendLine(string.Join(", ", {{name}}));
-                  {{/isArray}}
-                  {{^isArray}}
-                    sb.Append("  {{name}}: ").AppendLine({{name}});
-                  {{/isArray}}
-                {{/vars}}
-                {{#isAdditionalPropertiesTrue}}
-                  sb.Append("  AdditionalProperties: ").AppendLine(AdditionalProperties);
-                {{/isAdditionalPropertiesTrue}}
-                sb.AppendLine("}");
-                return sb.ToString();
-              }
-              
-              /// <summary>
-              /// Returns the JSON string presentation of the object
-              /// </summary>
-              /// <returns>JSON string presentation of the object</returns>
-              public {{#parent}}{{^isArray}}{{^isMap}}override {{/isMap}}{{/isArray}}{{/parent}}{{^parent}}virtual {{/parent}}string ToJson()
-              {
-                return System.Text.Json.JsonSerializer.Serialize(this);
-              }{{#equatable}}
-              
-              /// <summary>
-              /// Returns true if objects are equal
-              /// </summary>
-              /// <param name="input">object to be compared</param>
-              /// <returns>Boolean</returns>
-              public override bool Equals(object input)
-              {
-                {{#useCompareNetObjects}}
-                  return OpenAPIClientUtils.compareLogic.Compare(this, input as {{classname}}).AreEqual;
-                {{/useCompareNetObjects}}
-                {{^useCompareNetObjects}}
-                  return this.Equals(input as {{classname}});
-                {{/useCompareNetObjects}}
-              }
-              
-              /// <summary>
-              /// Returns true if {{classname}} instances are equal
-              /// </summary>
-              /// <param name="input">Instance of {{classname}} to be compared</param>
-              /// <returns>Boolean</returns>
-              public bool Equals({{classname}} input)
-              {
-                {{#useCompareNetObjects}}
-                  return OpenAPIClientUtils.compareLogic.Compare(this, input).AreEqual;
-                {{/useCompareNetObjects}}
-                {{^useCompareNetObjects}}
-                  if (input is null)
-                  {
-                    return false;
-                  }
-                  return {{#vars}}{{#parent}}base.Equals(input) && {{/parent}}{{^isContainer}}
-                  (
-                  this.{{name}} == input.{{name}} ||
-                  {{^vendorExtensions.x-is-value-type}}
-                    (this.{{name}} is not null &&
-                    this.{{name}}.Equals(input.{{name}}))
-                  {{/vendorExtensions.x-is-value-type}}
-                  {{#vendorExtensions.x-is-value-type}}
-                    this.{{name}}.Equals(input.{{name}})
-                  {{/vendorExtensions.x-is-value-type}}
-                  ){{^-last}} && {{/-last}}{{/isContainer}}{{#isContainer}}
-                  (
-                  this.{{name}} == input.{{name}} ||
-                  {{^vendorExtensions.x-is-value-type}}this.{{name}} is not null &&
-                    input.{{name}} is not null &&
-                  {{/vendorExtensions.x-is-value-type}}this.{{name}}.SequenceEqual(input.{{name}})
-                  ){{^-last}} && {{/-last}}{{/isContainer}}{{/vars}}{{^vars}}{{#parent}}base.Equals(input){{/parent}}{{^parent}}false{{/parent}}{{/vars}}{{^isAdditionalPropertiesTrue}};{{/isAdditionalPropertiesTrue}}
-                  {{#isAdditionalPropertiesTrue}}
-                    && (this.AdditionalProperties.Count == input.AdditionalProperties.Count && !this.AdditionalProperties.Except(input.AdditionalProperties).Any());
-                  {{/isAdditionalPropertiesTrue}}
-                {{/useCompareNetObjects}}
-              }
-              
-              /// <summary>
-              /// Gets the hash code
-              /// </summary>
-              /// <returns>Hash code</returns>
-              public override int GetHashCode()
-              {
-                unchecked // Overflow is fine, just wrap
-                {
-                  {{#parent}}
-                    int hashCode = base.GetHashCode();
-                  {{/parent}}
-                  {{^parent}}
-                    int hashCode = 41;
-                  {{/parent}}
-                  {{#vars}}
-                    {{^vendorExtensions.x-is-value-type}}
-                      if (this.{{name}} is not null)
-                      {
-                        hashCode = (hashCode * 59) + this.{{name}}.GetHashCode();
-                      }
-                    {{/vendorExtensions.x-is-value-type}}
-                    {{#vendorExtensions.x-is-value-type}}
-                      hashCode = (hashCode * 59) + this.{{name}}.GetHashCode();
-                    {{/vendorExtensions.x-is-value-type}}
-                  {{/vars}}
-                  {{#isAdditionalPropertiesTrue}}
-                    if (this.AdditionalProperties is not null)
-                    {
-                      hashCode = (hashCode * 59) + this.AdditionalProperties.GetHashCode();
-                    }
-                  {{/isAdditionalPropertiesTrue}}
-                  return hashCode;
-                }
-              }{{/equatable}}{{#validatable}}{{>validatable}}{{/validatable}}
+              sb.AppendLine("}");
+              return sb.ToString();
             }
             
+            /// <summary>
+            /// Returns the JSON string presentation of the object
+            /// </summary>
+            /// <returns>JSON string presentation of the object</returns>
+            public {{#parent}}{{^isArray}}{{^isMap}}override {{/isMap}}{{/isArray}}{{/parent}}string ToJson()
+            {
+              return System.Text.Json.JsonSerializer.Serialize(this);
+            }{{#equatable}}
+            
+            /// <summary>
+            /// Returns true if objects are equal
+            /// </summary>
+            /// <param name="input">object to be compared</param>
+            /// <returns>Boolean</returns>
+            public override bool Equals(object input)
+            {
+              {{#useCompareNetObjects}}
+                return OpenAPIClientUtils.compareLogic.Compare(this, input as {{classname}}).AreEqual;
+              {{/useCompareNetObjects}}
+              {{^useCompareNetObjects}}
+                return this.Equals(input as {{classname}});
+              {{/useCompareNetObjects}}
+            }
+            
+            /// <summary>
+            /// Returns true if {{classname}} instances are equal
+            /// </summary>
+            /// <param name="input">Instance of {{classname}} to be compared</param>
+            /// <returns>Boolean</returns>
+            public bool Equals({{classname}} input)
+            {
+              {{#useCompareNetObjects}}
+                return OpenAPIClientUtils.compareLogic.Compare(this, input).AreEqual;
+              {{/useCompareNetObjects}}
+              {{^useCompareNetObjects}}
+                if (input is null)
+                {
+                  return false;
+                }
+                return {{#vars}}{{#parent}}base.Equals(input) && {{/parent}}{{^isContainer}}
+                (
+                this.{{name}} == input.{{name}} ||
+                {{^vendorExtensions.x-is-value-type}}
+                  (this.{{name}} is not null &&
+                  this.{{name}}.Equals(input.{{name}}))
+                {{/vendorExtensions.x-is-value-type}}
+                {{#vendorExtensions.x-is-value-type}}
+                  this.{{name}}.Equals(input.{{name}})
+                {{/vendorExtensions.x-is-value-type}}
+                ){{^-last}} && {{/-last}}{{/isContainer}}{{#isContainer}}
+                (
+                this.{{name}} == input.{{name}} ||
+                {{^vendorExtensions.x-is-value-type}}this.{{name}} is not null &&
+                  input.{{name}} is not null &&
+                {{/vendorExtensions.x-is-value-type}}this.{{name}}.SequenceEqual(input.{{name}})
+                ){{^-last}} && {{/-last}}{{/isContainer}}{{/vars}}{{^vars}}{{#parent}}base.Equals(input){{/parent}}{{^parent}}false{{/parent}}{{/vars}}{{^isAdditionalPropertiesTrue}};{{/isAdditionalPropertiesTrue}}
+                {{#isAdditionalPropertiesTrue}}
+                  && (this.AdditionalProperties.Count == input.AdditionalProperties.Count && !this.AdditionalProperties.Except(input.AdditionalProperties).Any());
+                {{/isAdditionalPropertiesTrue}}
+              {{/useCompareNetObjects}}
+            }
+            
+            /// <summary>
+            /// Gets the hash code
+            /// </summary>
+            /// <returns>Hash code</returns>
+            public override int GetHashCode()
+            {
+              unchecked // Overflow is fine, just wrap
+              {
+                {{#parent}}
+                  int hashCode = base.GetHashCode();
+                {{/parent}}
+                {{^parent}}
+                  int hashCode = 41;
+                {{/parent}}
+                {{#vars}}
+                  {{^vendorExtensions.x-is-value-type}}
+                    if (this.{{name}} is not null)
+                    {
+                      hashCode = (hashCode * 59) + this.{{name}}.GetHashCode();
+                    }
+                  {{/vendorExtensions.x-is-value-type}}
+                  {{#vendorExtensions.x-is-value-type}}
+                    hashCode = (hashCode * 59) + this.{{name}}.GetHashCode();
+                  {{/vendorExtensions.x-is-value-type}}
+                {{/vars}}
+                {{#isAdditionalPropertiesTrue}}
+                  if (this.AdditionalProperties is not null)
+                  {
+                    hashCode = (hashCode * 59) + this.AdditionalProperties.GetHashCode();
+                  }
+                {{/isAdditionalPropertiesTrue}}
+                return hashCode;
+              }
+            }{{/equatable}}{{#validatable}}{{>validatable}}{{/validatable}}
+          }
+          

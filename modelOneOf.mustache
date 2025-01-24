@@ -4,7 +4,7 @@
   /// </summary>
   {{#vendorExtensions.x-cls-compliant}}[CLSCompliant({{{.}}})]{{/vendorExtensions.x-cls-compliant}}{{#vendorExtensions.x-com-visible}}[ComVisible({{{.}}})]{{/vendorExtensions.x-com-visible}}
     [JsonConverter(typeof({{classname}}JsonConverter))]
-    {{>visibility}} partial class {{classname}} : {{#lambda.joinWithComma}}AbstractOpenAPISchema  {{#parent}}{{{.}}}  {{/parent}}{{#equatable}}IEquatable<{{classname}}>  {{/equatable}}{{#validatable}}IValidatableObject  {{/validatable}}{{/lambda.joinWithComma}}
+    {{>visibility}} sealed partial class {{classname}} : {{#lambda.joinWithComma}}AbstractOpenAPISchema  {{#parent}}{{{.}}}  {{/parent}}{{#equatable}}IEquatable<{{classname}}>  {{/equatable}}{{#validatable}}IValidatableObject  {{/validatable}}{{/lambda.joinWithComma}}
     {
       public override string SchemaType { get; } = OneOf;{{#model.isNullable}}
       public override bool IsNullable { get; } = true;{{/model.isNullable}}
