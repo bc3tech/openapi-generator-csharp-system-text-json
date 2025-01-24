@@ -15,7 +15,7 @@
     {{#-first}}
       {{#isString}}
         {{^useGenericHost}}
-          [JsonConverter(typeof(JsonStringEnumMemberConverter))]
+          [EnumStrings, JsonConverter(typeof(JsonStringEnumMemberConverter))]
         {{/useGenericHost}}
       {{/isString}}
     {{/-first}}
@@ -74,39 +74,35 @@
     /// <returns></returns>
     public static {{datatypeWithEnum}}{{^datatypeWithEnum}}{{classname}}{{/datatypeWithEnum}}? FromStringOrDefault(string value)
     {
-      {{#allowableValues}}
-        {{#enumVars}}
-          if (value.Equals({{^isString}}({{{value}}}).ToString(){{/isString}}{{#isString}}"{{{value}}}"{{/isString}}))
-          {
-            return {{datatypeWithEnum}}{{^datatypeWithEnum}}{{classname}}{{/datatypeWithEnum}}.{{name}};
-          }
-          
-        {{/enumVars}}
-      {{/allowableValues}}
-      return null;
-    }
-    
-    /// <summary>
-    /// Converts the <see cref="{{datatypeWithEnum}}{{^datatypeWithEnum}}{{classname}}{{/datatypeWithEnum}}"/> to the json value
-    /// </summary>
-    /// <param name="value"></param>
-    /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
-    public static {{>EnumValueDataType}} ToJsonValue({{datatypeWithEnum}}{{^datatypeWithEnum}}{{classname}}{{/datatypeWithEnum}} value)
-    {
-      {{^isString}}
-        return ({{>EnumValueDataType}}) value;
-      {{/isString}}
-      {{#isString}}
+      return value switch
+      {
         {{#allowableValues}}
           {{#enumVars}}
-            if (value == {{datatypeWithEnum}}{{^datatypeWithEnum}}{{classname}}{{/datatypeWithEnum}}.{{name}})
-            return {{^isNumeric}}"{{/isNumeric}}{{{value}}}{{^isNumeric}}"{{/isNumeric}};
-            
-          {{/enumVars}}
-        {{/allowableValues}}
-        throw new NotImplementedException($"Value could not be handled: '{value}'");
-      {{/isString}}
-    }
-  }
+            "{{{value}}}" => {{datatypeWithEnum}}{{^datatypeWithEnum}}{{classname}}{{/datatypeWithEnum}}.{{name}},{{/enumVars}}
+          {{/allowableValues}}
+          _ => null
+        };
+      }
+      
+      /// <summary>
+      /// Converts the <see cref="{{datatypeWithEnum}}{{^datatypeWithEnum}}{{classname}}{{/datatypeWithEnum}}"/> to the json value
+      /// </summary>
+      /// <param name="value"></param>
+      /// <returns></returns>
+      /// <exception cref="NotImplementedException"></exception>
+      public static {{>EnumValueDataType}} ToJsonValue({{datatypeWithEnum}}{{^datatypeWithEnum}}{{classname}}{{/datatypeWithEnum}} value)
+      {
+        {{^isString}}
+          return ({{>EnumValueDataType}}) value;
+        {{/isString}}
+        {{#isString}}
+          return value switch { {{#allowableValues}}{{#enumVars}}
+          {{datatypeWithEnum}}{{^datatypeWithEnum}}{{classname}}{{/datatypeWithEnum}}.{{name}} => {{^isNumeric}}"{{/isNumeric}}{{{value}}}{{^isNumeric}}"{{/isNumeric}},
+        {{/enumVars}}
+      {{/allowableValues}}
+      _ => throw new NotImplementedException($"Value could not be handled: '{value}'")
+    };
+  {{/isString}}
+}
+}
 {{/useGenericHost}}

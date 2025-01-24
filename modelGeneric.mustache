@@ -66,15 +66,11 @@
               {{/deprecated}}
               public {{{complexType}}}{{^complexType}}{{{datatypeWithEnum}}}{{/complexType}}{{^isContainer}}{{^required}}?{{/required}}{{/isContainer}} {{name}} { get; set; }
               
-              
               /// <summary>
               /// Returns false as {{name}} should not be serialized given that it's read-only.
               /// </summary>
               /// <returns>false (boolean)</returns>
-              public bool ShouldSerialize{{name}}()
-              {
-                return false;
-              }
+              public bool ShouldSerialize{{name}}() => false;
             {{/isReadOnly}}
             
             {{^isReadOnly}}
@@ -85,13 +81,14 @@
                 {{/deprecated}}
                 public {{{complexType}}}{{^complexType}}{{{datatypeWithEnum}}}{{/complexType}}{{^isContainer}}{{^required}}?{{/required}}{{/isContainer}} {{name}}
                 {
-                  get{ return _{{name}};}
+                  get => _{{name}};
                   set
                   {
                     _{{name}} = value;
                     _flag{{name}} = true;
                   }
                 }
+
                 private {{{complexType}}}{{^complexType}}{{{datatypeWithEnum}}}{{/complexType}}{{^isContainer}}{{^required}}?{{/required}}{{/isContainer}} _{{name}};
                 private bool _flag{{name}};
                 
@@ -99,10 +96,8 @@
                 /// Returns false as {{name}} should not be serialized given that it's read-only.
                 /// </summary>
                 /// <returns>false (boolean)</returns>
-                public bool ShouldSerialize{{name}}()
-                {
-                  return _flag{{name}};
-                }
+                public bool ShouldSerialize{{name}}() => _flag{{name}};
+
               {{/isReadOnly}}
             {{/conditionalSerialization}}
           {{/isEnum}}
@@ -115,8 +110,9 @@
             /// </summary>
             [JsonConstructor]
             protected {{classname}}() { {{#isAdditionalPropertiesTrue}}
-            this.AdditionalProperties = new Dictionary<string, object>();{{/isAdditionalPropertiesTrue}}
+            this.AdditionalProperties = [];{{/isAdditionalPropertiesTrue}}
           }
+
         {{/hasOnlyReadOnly}}
       {{/hasRequired}}
       /// <summary>
@@ -146,7 +142,6 @@
                 {{/conditionalSerialization}}
                 {{#conditionalSerialization}}
                   {{^vendorExtensions.x-csharp-value-type}}
-                    
                     // to ensure "{{nameInCamelCase}}" is required (not null)
                     ArgumentNullException.ThrowIfNull({{nameInCamelCase}});
                     this._{{name}} = {{nameInCamelCase}};
@@ -192,7 +187,7 @@
         {{/vars}}
         {{#isAdditionalPropertiesTrue}}
           
-          this.AdditionalProperties = new Dictionary<string, object>();
+          this.AdditionalProperties = [];
         {{/isAdditionalPropertiesTrue}}
       }
       
@@ -212,7 +207,7 @@
                 {{#deprecated}}
                   [Obsolete]
                 {{/deprecated}}
-                public {{{dataType}}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}} {{name}} { get; {{#isReadOnly}}private {{/isReadOnly}}set; }
+                public {{{dataType}}}{{#nullableReferenceTypes}}{{^required}}?{{/required}}{{/nullableReferenceTypes}} {{name}} { get; {{#isReadOnly}}private {{/isReadOnly}}set; }
                 
                 {{#isReadOnly}}
                   /// <summary>
@@ -229,16 +224,13 @@
                     {{#deprecated}}
                       [Obsolete]
                     {{/deprecated}}
-                    public {{{dataType}}} {{name}} { get; private set; }
+                    public {{{dataType}}}{{#nullableReferenceTypes}}{{^required}}?{{/required}}{{/nullableReferenceTypes}} {{name}} { get; private set; }
                     
                     /// <summary>
                     /// Returns false as {{name}} should not be serialized given that it's read-only.
                     /// </summary>
                     /// <returns>false (boolean)</returns>
-                    public bool ShouldSerialize{{name}}()
-                    {
-                      return false;
-                    }
+                    public bool ShouldSerialize{{name}}() => false;
                   {{/isReadOnly}}
                   {{^isReadOnly}}
                     {{#required}}[JsonRequired]{{/required}}
@@ -246,9 +238,9 @@
                       {{#deprecated}}
                         [Obsolete]
                       {{/deprecated}}
-                      public {{{dataType}}} {{name}}
+                      public {{{dataType}}}{{#nullableReferenceTypes}}{{^required}}?{{/required}}{{/nullableReferenceTypes}} {{name}}
                       {
-                        get{ return _{{name}};}
+                        get => return _{{name}};
                         set
                         {
                           _{{name}} = value;
@@ -262,10 +254,7 @@
                       /// Returns false as {{name}} should not be serialized given that it's read-only.
                       /// </summary>
                       /// <returns>false (boolean)</returns>
-                      public bool ShouldSerialize{{name}}()
-                      {
-                        return _flag{{name}};
-                      }
+                      public bool ShouldSerialize{{name}}() => _flag{{name}};
                     {{/isReadOnly}}
                   {{/conditionalSerialization}}
                 {{/isEnum}}
@@ -295,11 +284,11 @@
                   sb.Append("  {{name}}: ").AppendLine($"{({{#nullableReferenceTypes}}{{name}} is null ? "[null]" : {{/nullableReferenceTypes}}string.Join(", ", {{name}}))}");
                 {{/isArray}}
                 {{^isArray}}
-                  sb.Append("  {{name}}: ").AppendLine($"{ {{name}}{{#nullableReferenceTypes}} ?? "[null]"{{/nullableReferenceTypes}} }");
+                  sb.Append("  {{name}}: ").AppendLine($"{ {{name}}{{#nullableReferenceTypes}}{{^required}}?.ToString() ?? "[null]"{{/required}}{{/nullableReferenceTypes}} }");
                 {{/isArray}}
               {{/vars}}
               {{#isAdditionalPropertiesTrue}}
-                sb.Append("  AdditionalProperties: ").AppendLine($"{AdditionalProperties{{#nullableReferenceTypes}} ?? "[null]"{{/nullableReferenceTypes}} }");
+                sb.Append("  AdditionalProperties: ").AppendLine($"{AdditionalProperties{{#nullableReferenceTypes}}{{^required}}?.ToString() ?? "[null]"{{/required}}{{/nullableReferenceTypes}} }");
               {{/isAdditionalPropertiesTrue}}
               sb.AppendLine("}");
               return sb.ToString();
@@ -344,6 +333,7 @@
                 {
                   return false;
                 }
+                
                 return {{#vars}}{{#parent}}base.Equals(input) && {{/parent}}{{^isContainer}}
                 (
                 this.{{name}} == input.{{name}} ||

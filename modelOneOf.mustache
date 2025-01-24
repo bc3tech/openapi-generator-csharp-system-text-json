@@ -3,7 +3,6 @@
   /// {{description}}{{^description}}{{classname}}{{/description}}
   /// </summary>
   {{#vendorExtensions.x-cls-compliant}}[CLSCompliant({{{.}}})]{{/vendorExtensions.x-cls-compliant}}{{#vendorExtensions.x-com-visible}}[ComVisible({{{.}}})]{{/vendorExtensions.x-com-visible}}
-    [JsonConverter(typeof({{classname}}JsonConverter))]
     {{>visibility}} sealed partial class {{classname}} : {{#lambda.joinWithComma}}AbstractOpenAPISchema  {{#parent}}{{{.}}}  {{/parent}}{{#equatable}}IEquatable<{{classname}}>  {{/equatable}}{{#validatable}}IValidatableObject  {{/validatable}}{{/lambda.joinWithComma}}
     {
       public override string SchemaType { get; } = OneOf;{{#model.isNullable}}
@@ -129,7 +128,7 @@
         {{/discriminator}}
       {{/useOneOfDiscriminatorLookup}}
       int match = 0;
-      List<string> matchedTypes = new List<string>();
+      List<string> matchedTypes = [];
       {{#oneOf}}
         
         try
