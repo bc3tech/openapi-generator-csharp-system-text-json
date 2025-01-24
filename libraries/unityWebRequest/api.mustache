@@ -117,7 +117,7 @@ using System;
           /// It's better to reuse the <see href="https://docs.microsoft.com/en-us/dotnet/architecture/microservices/implement-resilient-applications/use-httpclientfactory-to-implement-resilient-http-requests#issues-with-the-original-httpclient-class-available-in-net">HttpClient and HttpClientHandler</see>.
           /// </summary>
           /// <returns></returns>
-          public {{classname}}() : this((string)null)
+          public {{classname}}() : this(default)
           {
           }
           
@@ -198,7 +198,7 @@ using System;
           /// <summary>
           /// Holds the ApiClient if created
           /// </summary>
-          public ApiClient ApiClient { get; set; } = null;
+          public ApiClient? ApiClient { get; set; }
           
           {{#supportsAsync}}
             /// <summary>
@@ -444,11 +444,11 @@ using System;
                 {{/authMethods}}
                 
                 // make the HTTP request
-                var localVarResponse = this.Client.{{#lambda.titlecase}}{{#lambda.lowercase}}{{httpMethod}}{{/lambda.lowercase}}{{/lambda.titlecase}}<{{{returnType}}}{{^returnType}}object{{/returnType}}>("{{{path}}}", localVarRequestOptions, this.Configuration);
+                var localVarResponse = this.Client.{{#lambda.titlecase}}{{#lambda.lowercase}}{{httpMethod}}{{/lambda.lowercase}}{{/lambda.titlecase}}<{{{returnType}}}{{^returnType}}object{{/returnType}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}}>("{{{path}}}", localVarRequestOptions, this.Configuration);
                 
                 if (this.ExceptionFactory is not null)
                 {
-                  Exception _exception = this.ExceptionFactory("{{operationId}}", localVarResponse);
+                  var _exception = this.ExceptionFactory("{{operationId}}", localVarResponse);
                   if (_exception is not null) throw _exception;
                 }
                 
@@ -529,10 +529,16 @@ using System;
                   
                   
                   var localVarContentType = ClientUtils.SelectHeaderContentType(_contentTypes);
-                  if (localVarContentType is not null) localVarRequestOptions.HeaderParameters.Add("Content-Type", localVarContentType);
+                  if (localVarContentType is not null)
+                  {
+                    localVarRequestOptions.HeaderParameters.Add("Content-Type", localVarContentType);
+                  }
                   
                   var localVarAccept = ClientUtils.SelectHeaderAccept(_accepts);
-                  if (localVarAccept is not null) localVarRequestOptions.HeaderParameters.Add("Accept", localVarAccept);
+                  if (localVarAccept is not null)
+                  {
+                    localVarRequestOptions.HeaderParameters.Add("Accept", localVarAccept);
+                  }
                   
                   {{#pathParams}}
                     {{#required}}
@@ -667,7 +673,7 @@ using System;
                   
                   if (this.ExceptionFactory is not null)
                   {
-                    Exception _exception = this.ExceptionFactory("{{operationId}}", localVarResponse);
+                    var _exception = this.ExceptionFactory("{{operationId}}", localVarResponse);
                     if (_exception is not null) throw _exception;
                   }
                   
