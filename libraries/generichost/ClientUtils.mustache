@@ -189,7 +189,7 @@ using System.Runtime.CompilerServices;
                 return Uri.EscapeDataString(input);
             }
 
-            StringBuilder sb = new StringBuilder(input.Length * 2);
+            StringBuilder sb = new(input.Length * 2);
             int index = 0;
 
             while (index < input.Length)

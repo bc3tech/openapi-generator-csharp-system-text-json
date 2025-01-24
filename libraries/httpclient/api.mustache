@@ -298,12 +298,9 @@ using {{packageName}}.Client;
         {
           get
           {
-            if (_exceptionFactory is not null && _exceptionFactory.GetInvocationList().Length > 1)
-            {
-              throw new InvalidOperationException("Multicast delegate for ExceptionFactory is unsupported.");
-            }
-            
-            return _exceptionFactory;
+            return _exceptionFactory is not null && _exceptionFactory.GetInvocationList().Length > 1
+            ? throw new InvalidOperationException("Multicast delegate for ExceptionFactory is unsupported.")
+            : _exceptionFactory;
           }
           set => _exceptionFactory = value;
         }
@@ -347,7 +344,7 @@ using {{packageName}}.Client;
                   {{/vendorExtensions.x-csharp-value-type}}
                 {{/required}}
               {{/allParams}}
-              RequestOptions localVarRequestOptions = new RequestOptions();
+              RequestOptions localVarRequestOptions = new();
               
               string[] _contentTypes = [
                 {{#consumes}}
@@ -487,7 +484,7 @@ using {{packageName}}.Client;
                 {{/isApiKey}}
                 {{#isBasicBasic}}
                   // http basic authentication required
-                  if (!string.IsNullOrEmpty(this.Configuration.Username) || !string.IsNullOrEmpty(this.Configuration.Password) && !localVarRequestOptions.HeaderParameters.ContainsKey("Authorization"))
+                  if (!string.IsNullOrEmpty(this.Configuration.Username) || (!string.IsNullOrEmpty(this.Configuration.Password) && !localVarRequestOptions.HeaderParameters.ContainsKey("Authorization")))
                   {
                     localVarRequestOptions.HeaderParameters.Add("Authorization", "Basic " + ClientUtils.Base64Encode(this.Configuration.Username + ":" + this.Configuration.Password));
                   }
@@ -587,7 +584,7 @@ using {{packageName}}.Client;
                     {{/vendorExtensions.x-csharp-value-type}}
                   {{/required}}
                 {{/allParams}}
-                RequestOptions localVarRequestOptions = new RequestOptions();
+                RequestOptions localVarRequestOptions = new();
                 
                 string[] _contentTypes = [
                   {{#consumes}}
@@ -705,7 +702,8 @@ using {{packageName}}.Client;
                   {{#isBasic}}
                     {{#isBasicBasic}}
                       // http basic authentication required
-                      if (!string.IsNullOrEmpty(this.Configuration.Username) || !string.IsNullOrEmpty(this.Configuration.Password) && !localVarRequestOptions.HeaderParameters.ContainsKey("Authorization"))
+                      if (!string.IsNullOrEmpty(this.Configuration.Username) || (!string.IsNullOrEmpty(this.Configuration.Password) && !localVarRequestOptions.HeaderParameters.ContainsKey("Authorization")))
+                      
                       {
                         localVarRequestOptions.HeaderParameters.Add("Authorization", "Basic " + ClientUtils.Base64Encode(this.Configuration.Username + ":" + this.Configuration.Password));
                       }

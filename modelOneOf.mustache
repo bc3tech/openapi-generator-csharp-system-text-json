@@ -43,205 +43,192 @@
         get => _actualInstance;
         set
         {
-          {{#nullableReferenceTypes}}
-            if (value is null)
-            {
-              this._actualInstance = null;
-            }
-            else
-            {
-            {{/nullableReferenceTypes}}
-            {{#oneOf}}
-              {{^-first}}else {{/-first}}if (value.GetType() == typeof({{{.}}}))
-                {
-                  this._actualInstance = value;
-                }
-              {{/oneOf}}
-              else
-              {
-                throw new ArgumentException("Invalid instance found. Must be the following types:{{#oneOf}} {{{.}}}{{^-last}},{{/-last}}{{/oneOf}}");
-              }
-              {{#nullableReferenceTypes}}
-              }
-            {{/nullableReferenceTypes}}
-          }
-        }
-        {{#composedSchemas.oneOf}}
-          {{^vendorExtensions.x-duplicated-data-type}}
-            {{^isNull}}
-              
-              /// <summary>
-              /// Get the actual instance of `{{dataType}}`. If the actual instance is not `{{dataType}}`,
-              /// the InvalidClassException will be thrown
-              /// </summary>
-              /// <returns>An instance of {{dataType}}</returns>
-              public {{{dataType}}} Get{{#lambda.titlecase}}{{baseType}}{{/lambda.titlecase}}{{#isArray}}{{#lambda.titlecase}}{{{dataFormat}}}{{/lambda.titlecase}}{{/isArray}}()
-              {
-                return ({{{dataType}}})this.ActualInstance;
-              }
-            {{/isNull}}
-          {{/vendorExtensions.x-duplicated-data-type}}
-        {{/composedSchemas.oneOf}}
-        
-        /// <summary>
-        /// Returns the string presentation of the object
-        /// </summary>
-        /// <returns>string presentation of the object</returns>
-        public override string ToString()
-        {
-          var sb = new StringBuilder();
-          sb.AppendLine("class {{classname}} {");
-          sb.Append("  ActualInstance: ").Append(this.ActualInstance).AppendLine();
-          sb.AppendLine("}");
-          return sb.ToString();
-        }
-        
-        /// <summary>
-        /// Returns the JSON string presentation of the object
-        /// </summary>
-        /// <returns>JSON string presentation of the object</returns>
-        public override string ToJson() => JsonSerializer.Serialize(this.ActualInstance, {{classname}}.SerializerSettings);
-        
-        /// <summary>
-        /// Converts the JSON string into an instance of {{classname}}
-        /// </summary>
-        /// <param name="jsonString">JSON string</param>
-        /// <returns>An instance of {{classname}}</returns>
-        public static {{classname}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}} FromJson(string jsonString)
-        {
-          {{classname}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}} new{{classname}} = null;
-          
-          if (string.IsNullOrEmpty(jsonString))
-          {
-            return new{{classname}};
-          }
-          {{#useOneOfDiscriminatorLookup}}
-            {{#discriminator}}
-              
-              try
-              {
-                var discriminatorObj = JObject.Parse(jsonString)["{{{propertyBaseName}}}"];
-                string discriminatorValue =  discriminatorObj is null ?string.Empty :discriminatorObj.ToString();
-                switch (discriminatorValue)
-                {
-                  {{#mappedModels}}
-                    case "{{{mappingName}}}":
-                    new{{classname}} = new {{classname}}(JsonSerializer.Deserialize<{{{modelName}}}>(jsonString, {{classname}}.AdditionalPropertiesSerializerSettings));
-                    return new{{classname}};
-                  {{/mappedModels}}
-                  default:
-                  System.Diagnostics.Debug.WriteLine(string.Format("Failed to lookup discriminator value `{0}` for {{classname}}. Possible values:{{#mappedModels}} {{{mappingName}}}{{/mappedModels}}", discriminatorValue));
-                  break;
-                }
-              }
-              catch (Exception ex)
-              {
-                System.Diagnostics.Debug.WriteLine(string.Format("Failed to parse the json data : `{0}` {1}", jsonString, ex.ToString()));
-              }
-              
-            {{/discriminator}}
-          {{/useOneOfDiscriminatorLookup}}
-          int match = 0;
-          List<string> matchedTypes = new List<string>();
-          {{#oneOf}}
-            
-            try
-            {
-              // if it does not contains "AdditionalProperties", use SerializerSettings to deserialize
-              if (typeof({{{.}}}).GetProperty("AdditionalProperties") is null)
-              {
-                new{{classname}} = new {{classname}}(JsonSerializer.Deserialize<{{{.}}}>(jsonString, {{classname}}.SerializerSettings));
-              }
-              else
-              {
-                new{{classname}} = new {{classname}}(JsonSerializer.Deserialize<{{{.}}}>(jsonString, {{classname}}.AdditionalPropertiesSerializerSettings));
-              }
-              matchedTypes.Add("{{{.}}}");
-              match++;
-            }
-            catch (Exception exception)
-            {
-              // deserialization failed, try the next one
-              System.Diagnostics.Debug.WriteLine(string.Format("Failed to deserialize `{0}` into {{{.}}}: {1}", jsonString, exception.ToString()));
-            }
-          {{/oneOf}}
-          
-          if (match is 0)
-          {
-            throw new InvalidDataException("The JSON string `" + jsonString + "` cannot be deserialized into any schema defined.");
-          }
-          else if (match > 1)
-          {
-            throw new InvalidDataException("The JSON string `" + jsonString + "` incorrectly matches more than one schema (should be exactly one match): " + matchedTypes);
-          }
-          
-          // deserialization is considered successful at this point if no exception has been thrown.
-          return new{{classname}};
-        }{{#equatable}}
-        
-        /// <summary>
-        /// Returns true if objects are equal
-        /// </summary>
-        /// <param name="input">object to be compared</param>
-        /// <returns>Boolean</returns>
-        public override bool Equals(object input)
-        {
-          {{#useCompareNetObjects}}
-            return OpenAPIClientUtils.compareLogic.Compare(this, input as {{classname}}).AreEqual;
-          {{/useCompareNetObjects}}
-          {{^useCompareNetObjects}}
-            return this.Equals(input as {{classname}});
-          {{/useCompareNetObjects}}
-        }
-        
-        /// <summary>
-        /// Returns true if {{classname}} instances are equal
-        /// </summary>
-        /// <param name="input">Instance of {{classname}} to be compared</param>
-        /// <returns>Boolean</returns>
-        public bool Equals({{classname}} input)
-        {
-          {{#useCompareNetObjects}}
-            return OpenAPIClientUtils.compareLogic.Compare(this, input).AreEqual;
-          {{/useCompareNetObjects}}
-          {{^useCompareNetObjects}}
-            if (input is null)
-            {
-              return false;
-            }
-            
-            return this.ActualInstance.Equals(input.ActualInstance);
-          {{/useCompareNetObjects}}
-        }
-        
-        /// <summary>
-        /// Gets the hash code
-        /// </summary>
-        /// <returns>Hash code</returns>
-        public override int GetHashCode()
-        {
-          unchecked // Overflow is fine, just wrap
-          {
-            int hashCode = 41;
-            if (this.ActualInstance is not null)
-            {
-              hashCode = hashCode * 59 + this.ActualInstance.GetHashCode();
-            }
-            
-            return hashCode;
-          }
-        }
-      {{/equatable}}{{#validatable}}
-      
-      /// <summary>
-      /// To validate all properties of the instance
-      /// </summary>
-      /// <param name="validationContext">Validation context</param>
-      /// <returns>Validation Result</returns>
-      IEnumerable<System.ComponentModel.DataAnnotations.ValidationResult> IValidatableObject.Validate(ValidationContext validationContext)
-      {
-        yield break;
+          this._actualInstance = value switch
+          { {{#nullableReferenceTypes}}
+          null => null,{{/nullableReferenceTypes}}
+          {{#anyOf}}
+            {{{.}}} _ => value,
+          {{/anyOf}}
+          _ => throw new ArgumentException("Invalid instance found. Must be the following types: int, string"),
+        };
       }
-    {{/validatable}}
+    }
+    {{#composedSchemas.oneOf}}
+      {{^vendorExtensions.x-duplicated-data-type}}
+        {{^isNull}}
+          
+          /// <summary>
+          /// Get the actual instance of `{{dataType}}`. If the actual instance is not `{{dataType}}`,
+          /// the InvalidClassException will be thrown
+          /// </summary>
+          /// <returns>An instance of {{dataType}}</returns>
+          public {{{dataType}}} Get{{#lambda.titlecase}}{{baseType}}{{/lambda.titlecase}}{{#isArray}}{{#lambda.titlecase}}{{{dataFormat}}}{{/lambda.titlecase}}{{/isArray}}()
+          {
+            return ({{{dataType}}})this.ActualInstance;
+          }
+        {{/isNull}}
+      {{/vendorExtensions.x-duplicated-data-type}}
+    {{/composedSchemas.oneOf}}
+    
+    /// <summary>
+    /// Returns the string presentation of the object
+    /// </summary>
+    /// <returns>string presentation of the object</returns>
+    public override string ToString()
+    {
+      var sb = new StringBuilder();
+      sb.AppendLine("class {{classname}} {");
+      sb.Append("  ActualInstance: ").Append(this.ActualInstance).AppendLine();
+      sb.AppendLine("}");
+      return sb.ToString();
+    }
+    
+    /// <summary>
+    /// Returns the JSON string presentation of the object
+    /// </summary>
+    /// <returns>JSON string presentation of the object</returns>
+    public override string ToJson() => JsonSerializer.Serialize(this.ActualInstance, {{classname}}.SerializerSettings);
+    
+    /// <summary>
+    /// Converts the JSON string into an instance of {{classname}}
+    /// </summary>
+    /// <param name="jsonString">JSON string</param>
+    /// <returns>An instance of {{classname}}</returns>
+    public static {{classname}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}} FromJson(string jsonString)
+    {
+      {{classname}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}} new{{classname}} = null;
+      
+      if (string.IsNullOrEmpty(jsonString))
+      {
+        return new{{classname}};
+      }
+      {{#useOneOfDiscriminatorLookup}}
+        {{#discriminator}}
+          
+          try
+          {
+            var discriminatorObj = JObject.Parse(jsonString)["{{{propertyBaseName}}}"];
+            string discriminatorValue =  discriminatorObj is null ?string.Empty :discriminatorObj.ToString();
+            switch (discriminatorValue)
+            {
+              {{#mappedModels}}
+                case "{{{mappingName}}}":
+                new{{classname}} = new {{classname}}(JsonSerializer.Deserialize<{{{modelName}}}>(jsonString, {{classname}}.AdditionalPropertiesSerializerSettings));
+                return new{{classname}};
+              {{/mappedModels}}
+              default:
+              System.Diagnostics.Debug.WriteLine(string.Format("Failed to lookup discriminator value `{0}` for {{classname}}. Possible values:{{#mappedModels}} {{{mappingName}}}{{/mappedModels}}", discriminatorValue));
+              break;
+            }
+          }
+          catch (Exception ex)
+          {
+            System.Diagnostics.Debug.WriteLine(string.Format("Failed to parse the json data : `{0}` {1}", jsonString, ex.ToString()));
+          }
+          
+        {{/discriminator}}
+      {{/useOneOfDiscriminatorLookup}}
+      int match = 0;
+      List<string> matchedTypes = new List<string>();
+      {{#oneOf}}
+        
+        try
+        {
+          // if it does not contains "AdditionalProperties", use SerializerSettings to deserialize
+          if (typeof({{{.}}}).GetProperty("AdditionalProperties") is null)
+          {
+            new{{classname}} = new {{classname}}(JsonSerializer.Deserialize<{{{.}}}>(jsonString, {{classname}}.SerializerSettings));
+          }
+          else
+          {
+            new{{classname}} = new {{classname}}(JsonSerializer.Deserialize<{{{.}}}>(jsonString, {{classname}}.AdditionalPropertiesSerializerSettings));
+          }
+          matchedTypes.Add("{{{.}}}");
+          match++;
+        }
+        catch (Exception exception)
+        {
+          // deserialization failed, try the next one
+          System.Diagnostics.Debug.WriteLine(string.Format("Failed to deserialize `{0}` into {{{.}}}: {1}", jsonString, exception.ToString()));
+        }
+      {{/oneOf}}
+      
+      if (match is 0)
+      {
+        throw new InvalidDataException("The JSON string `" + jsonString + "` cannot be deserialized into any schema defined.");
+      }
+      else if (match > 1)
+      {
+        throw new InvalidDataException("The JSON string `" + jsonString + "` incorrectly matches more than one schema (should be exactly one match): " + matchedTypes);
+      }
+      
+      // deserialization is considered successful at this point if no exception has been thrown.
+      return new{{classname}};
+    }{{#equatable}}
+    
+    /// <summary>
+    /// Returns true if objects are equal
+    /// </summary>
+    /// <param name="input">object to be compared</param>
+    /// <returns>Boolean</returns>
+    public override bool Equals(object input)
+    {
+      {{#useCompareNetObjects}}
+        return OpenAPIClientUtils.compareLogic.Compare(this, input as {{classname}}).AreEqual;
+      {{/useCompareNetObjects}}
+      {{^useCompareNetObjects}}
+        return this.Equals(input as {{classname}});
+      {{/useCompareNetObjects}}
+    }
+    
+    /// <summary>
+    /// Returns true if {{classname}} instances are equal
+    /// </summary>
+    /// <param name="input">Instance of {{classname}} to be compared</param>
+    /// <returns>Boolean</returns>
+    public bool Equals({{classname}} input)
+    {
+      {{#useCompareNetObjects}}
+        return OpenAPIClientUtils.compareLogic.Compare(this, input).AreEqual;
+      {{/useCompareNetObjects}}
+      {{^useCompareNetObjects}}
+        if (input is null)
+        {
+          return false;
+        }
+        
+        return this.ActualInstance.Equals(input.ActualInstance);
+      {{/useCompareNetObjects}}
+    }
+    
+    /// <summary>
+    /// Gets the hash code
+    /// </summary>
+    /// <returns>Hash code</returns>
+    public override int GetHashCode()
+    {
+      unchecked // Overflow is fine, just wrap
+      {
+        int hashCode = 41;
+        if (this.ActualInstance is not null)
+        {
+          hashCode = hashCode * 59 + this.ActualInstance.GetHashCode();
+        }
+        
+        return hashCode;
+      }
+    }
+  {{/equatable}}{{#validatable}}
+  
+  /// <summary>
+  /// To validate all properties of the instance
+  /// </summary>
+  /// <param name="validationContext">Validation context</param>
+  /// <returns>Validation Result</returns>
+  IEnumerable<System.ComponentModel.DataAnnotations.ValidationResult> IValidatableObject.Validate(ValidationContext validationContext)
+  {
+    yield break;
   }
+{{/validatable}}
+}
 {{/model}}

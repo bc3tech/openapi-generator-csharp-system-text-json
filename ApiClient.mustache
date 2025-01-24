@@ -103,7 +103,7 @@ internal sealed class CustomJsonCodec : IRestSerializer, ISerializer, IDeseriali
         var filePath = string.IsNullOrEmpty(_configuration.TempFolderPath)
         ? Path.GetTempPath()
         : _configuration.TempFolderPath;
-        var regex = new Regex(@"Content-Disposition=.*filename=['""]?([^'""\s]+)['""]?$");
+        var regex = FilenameContentDetector();
         foreach (var header in response.Headers)
         {
           var match = regex.Match(header.ToString());
@@ -150,6 +150,9 @@ internal sealed class CustomJsonCodec : IRestSerializer, ISerializer, IDeseriali
   contentType.Value.EndsWith("javascript", StringComparison.InvariantCultureIgnoreCase);
   
   public ContentType ContentType { get; set; } = RestSharp.ContentType.Json;
+  
+  [GeneratedRegex(@"Content-Disposition=.*filename=['""]?([^'""\s]+)['""]?$")]
+  private static partial Regex FilenameContentDetector();
   
   public DataFormat DataFormat => DataFormat.Json;
 }
