@@ -332,7 +332,7 @@ using {{packageName}}.Client;
                     {{#items.vars}}
                       if ({{paramName}}.{{name}} is not null)
                       {
-                        localVarRequestOptions.QueryParameters.Add({{packageName}}.Client.ClientUtils.ParameterToMultiMap("{{collectionFormat}}", "{{paramName}}[{{nameInCamelCase}}]", {{paramName}}.{{name}}));
+                        localVarRequestOptions.QueryParameters.Add({{packageName}}.Client.ClientUtils.ParameterToMultiMap("{{collectionFormat}}", "{{paramName}}[{{#lambda.camelcase_sanitize_param}}{{name}}{{/lambda.camelcase_sanitize_param}}]", {{paramName}}.{{name}}));
                       }
                     {{/items.vars}}
                     {{^items}}

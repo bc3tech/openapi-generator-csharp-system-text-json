@@ -23,7 +23,7 @@
             /// with the <see cref="{{#lambdaCref}}{{{dataType}}}{{/lambdaCref}}" /> class
             /// </summary>
             /// <param name="actualInstance">An instance of {{dataType}}.</param>
-            public {{classname}}({{{dataType}}}{{^model.isNullable}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}}{{/model.isNullable}} actualInstance)
+            public {{classname}}({{#lambda.optional}}{{{dataType}}}{{/lambda.optional}} actualInstance)
             {
               this.ActualInstance = actualInstance{{^model.isNullable}}{{^isPrimitiveType}} ?? throw new ArgumentException("Invalid instance found. Must not be null."){{/isPrimitiveType}}{{#isPrimitiveType}}{{#isArray}} ?? throw new ArgumentException("Invalid instance found. Must not be null."){{/isArray}}{{/isPrimitiveType}}{{#isPrimitiveType}}{{#isFreeFormObject}} ?? throw new ArgumentException("Invalid instance found. Must not be null."){{/isFreeFormObject}}{{/isPrimitiveType}}{{#isPrimitiveType}}{{#isString}} ?? throw new ArgumentException("Invalid instance found. Must not be null."){{/isString}}{{/isPrimitiveType}}{{/model.isNullable}};
             }
@@ -32,7 +32,7 @@
         {{/vendorExtensions.x-duplicated-data-type}}
       {{/composedSchemas.oneOf}}
       
-      private object{{^model.isNullable}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}}{{/model.isNullable}} _actualInstance;
+      private object{{#model.isNullable}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}}{{/model.isNullable}} _actualInstance;
       
       /// <summary>
       /// Gets or Sets ActualInstance
@@ -45,10 +45,10 @@
           this._actualInstance = value switch
           { {{#nullableReferenceTypes}}
           null => null,{{/nullableReferenceTypes}}
-          {{#anyOf}}
+          {{#oneOf}}
             {{{.}}} _ => value,
-          {{/anyOf}}
-          _ => throw new ArgumentException("Invalid instance found. Must be the following types: int, string"),
+          {{/oneOf}}
+          _ => throw new ArgumentException("Invalid instance found. Must be the following types: {{#lambda.joinWithComma}}{{oneOf}}  {{/lambda.joinWithComma}}")
         };
       }
     }
@@ -61,9 +61,9 @@
           /// the InvalidClassException will be thrown
           /// </summary>
           /// <returns>An instance of {{dataType}}</returns>
-          public {{{dataType}}} Get{{#lambda.titlecase}}{{baseType}}{{/lambda.titlecase}}{{#isArray}}{{#lambda.titlecase}}{{{dataFormat}}}{{/lambda.titlecase}}{{/isArray}}()
+          public {{#lambda.optional}}{{{dataType}}}{{/lambda.optional}} Get{{#lambda.titlecase}}{{baseType}}{{/lambda.titlecase}}{{#isArray}}{{#lambda.titlecase}}{{{dataFormat}}}{{/lambda.titlecase}}{{/isArray}}()
           {
-            return ({{{dataType}}})this.ActualInstance;
+            return ({{#lambda.optional}}{{{dataType}}}{{/lambda.optional}})this.ActualInstance;
           }
         {{/isNull}}
       {{/vendorExtensions.x-duplicated-data-type}}
@@ -95,7 +95,7 @@
     /// <returns>An instance of {{classname}}</returns>
     public static {{classname}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}} FromJson(string jsonString)
     {
-      {{classname}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}} new{{classname}} = null;
+      {{classname}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}} new{{classname}} = default;
       
       if (string.IsNullOrEmpty(jsonString))
       {
@@ -124,13 +124,12 @@
           {
             System.Diagnostics.Debug.WriteLine(string.Format("Failed to parse the json data : `{0}` {1}", jsonString, ex.ToString()));
           }
-          
         {{/discriminator}}
       {{/useOneOfDiscriminatorLookup}}
+      
       int match = 0;
       List<string> matchedTypes = [];
       {{#oneOf}}
-        
         try
         {
           // if it does not contains "AdditionalProperties", use SerializerSettings to deserialize
@@ -142,6 +141,7 @@
           {
             new{{classname}} = new {{classname}}(JsonSerializer.Deserialize<{{{.}}}>(jsonString, {{classname}}.AdditionalPropertiesSerializerSettings));
           }
+          
           matchedTypes.Add("{{{.}}}");
           match++;
         }
@@ -150,19 +150,14 @@
           // deserialization failed, try the next one
           System.Diagnostics.Debug.WriteLine(string.Format("Failed to deserialize `{0}` into {{{.}}}: {1}", jsonString, exception.ToString()));
         }
+
       {{/oneOf}}
-      
-      if (match is 0)
+      return match switch
       {
-        throw new InvalidDataException("The JSON string `" + jsonString + "` cannot be deserialized into any schema defined.");
-      }
-      else if (match > 1)
-      {
-        throw new InvalidDataException("The JSON string `" + jsonString + "` incorrectly matches more than one schema (should be exactly one match): " + matchedTypes);
-      }
-      
-      // deserialization is considered successful at this point if no exception has been thrown.
-      return new{{classname}};
+        0 => throw new InvalidDataException("The JSON string `" + jsonString + "` cannot be deserialized into any schema defined."),
+        > 1 => throw new InvalidDataException("The JSON string `" + jsonString + "` incorrectly matches more than one schema (should be exactly one match): " + matchedTypes),
+        _ => new{{classname}}
+      };
     }{{#equatable}}
     
     /// <summary>
