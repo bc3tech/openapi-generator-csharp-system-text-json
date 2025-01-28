@@ -134,14 +134,12 @@ using System.Net.Mime;
           /// <returns></returns>
           public {{classname}}(string? basePath)
           {
-            this.Configuration = {{packageName}}.Client.Configuration.MergeConfigurations(
-            {{packageName}}.Client.GlobalConfiguration.Instance,
-            new {{packageName}}.Client.Configuration { BasePath = basePath }
-            );
+            this.Configuration = {{packageName}}.Client.Configuration.MergeConfigurations({{packageName}}.Client.GlobalConfiguration.Instance, new {{packageName}}.Client.Configuration { BasePath = basePath });
             this.Client = new {{packageName}}.Client.ApiClient(this.Configuration.BasePath);
             {{#supportsAsync}}
               this.AsynchronousClient = new {{packageName}}.Client.ApiClient(this.Configuration.BasePath);
             {{/supportsAsync}}
+
             this.ExceptionFactory = {{packageName}}.Client.Configuration.DefaultExceptionFactory;
           }
           
@@ -155,15 +153,13 @@ using System.Net.Mime;
           {
             ArgumentNullException.ThrowIfNull(configuration);
             
-            this.Configuration = {{packageName}}.Client.Configuration.MergeConfigurations(
-            {{packageName}}.Client.GlobalConfiguration.Instance,
-            configuration
-            );
+            this.Configuration = {{packageName}}.Client.Configuration.MergeConfigurations({{packageName}}.Client.GlobalConfiguration.Instance, configuration);
             this.Client = new {{packageName}}.Client.ApiClient(this.Configuration.BasePath);
             {{#supportsAsync}}
               this.AsynchronousClient = new {{packageName}}.Client.ApiClient(this.Configuration.BasePath);
             {{/supportsAsync}}
-            ExceptionFactory = {{packageName}}.Client.Configuration.DefaultExceptionFactory;
+
+            this.ExceptionFactory = {{packageName}}.Client.Configuration.DefaultExceptionFactory;
           }
           
           /// <summary>
@@ -176,16 +172,16 @@ using System.Net.Mime;
           public {{classname}}({{packageName}}.Client.ISynchronousClient client, {{#supportsAsync}}{{packageName}}.Client.IAsynchronousClient asyncClient, {{/supportsAsync}}{{packageName}}.Client.IReadableConfiguration configuration)
           {
             ArgumentNullException.ThrowIfNull(client);
+            this.Client = client;
+
             {{#supportsAsync}}
               ArgumentNullException.ThrowIfNull(asyncClient);
+              this.AsynchronousClient = asyncClient;
+
             {{/supportsAsync}}
             ArgumentNullException.ThrowIfNull(configuration);
-            
-            this.Client = client;
-            {{#supportsAsync}}
-              this.AsynchronousClient = asyncClient;
-            {{/supportsAsync}}
             this.Configuration = configuration;
+            
             this.ExceptionFactory = {{packageName}}.Client.Configuration.DefaultExceptionFactory;
           }
           

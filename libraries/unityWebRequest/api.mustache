@@ -131,15 +131,13 @@ using System;
           /// <returns></returns>
           public {{classname}}(string basePath)
           {
-            this.Configuration = Configuration.MergeConfigurations(
-            GlobalConfiguration.Instance,
-            new Configuration { BasePath = basePath }
-            );
+            this.Configuration = Configuration.MergeConfigurations(GlobalConfiguration.Instance, new Configuration { BasePath = basePath });
             this.ApiClient = new ApiClient(this.Configuration.BasePath);
             this.Client =  this.ApiClient;
             {{#supportsAsync}}
               this.AsynchronousClient = this.ApiClient;
             {{/supportsAsync}}
+
             this.ExceptionFactory = Configuration.DefaultExceptionFactory;
           }
           
@@ -154,18 +152,15 @@ using System;
           public {{classname}}({{packageName}}.Client.Configuration configuration)
           {
             ArgumentNullException.ThrowIfNull(configuration);
+            this.Configuration = Configuration.MergeConfigurations(GlobalConfiguration.Instance, configuration);
             
-            
-            this.Configuration = Configuration.MergeConfigurations(
-            GlobalConfiguration.Instance,
-            configuration
-            );
             this.ApiClient = new ApiClient(this.Configuration.BasePath);
             this.Client = this.ApiClient;
             {{#supportsAsync}}
               this.AsynchronousClient = this.ApiClient;
             {{/supportsAsync}}
-            ExceptionFactory = Configuration.DefaultExceptionFactory;
+
+            this.ExceptionFactory = Configuration.DefaultExceptionFactory;
           }
           
           /// <summary>
@@ -182,16 +177,13 @@ using System;
             
             {{#supportsAsync}}
               ArgumentNullException.ThrowIfNull(asyncClient);
+              this.AsynchronousClient = asyncClient;
               
             {{/supportsAsync}}
             ArgumentNullException.ThrowIfNull(configuration);
-            
+            this.Configuration = configuration;
             
             this.Client = client;
-            {{#supportsAsync}}
-              this.AsynchronousClient = asyncClient;
-            {{/supportsAsync}}
-            this.Configuration = configuration;
             this.ExceptionFactory = Configuration.DefaultExceptionFactory;
           }
           
