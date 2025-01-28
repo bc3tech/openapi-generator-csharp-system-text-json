@@ -2,12 +2,10 @@
 
 namespace {{packageName}}.Client;
 
-using Microsoft.Extensions.EnumStrings;
-
 /// <summary>
 /// Http methods supported by swagger
 /// </summary>
-[EnumStrings]
+[EnumStrings(ExtensionNamespace = "{{packageName}}.HttpMethodExtensions"{{^nonPublicApi}}, ExtensionClassModifiers ="public static"{{/nonPublicApi}})]
 public enum HttpMethod
 {
   /// <summary>HTTP GET request.</summary>

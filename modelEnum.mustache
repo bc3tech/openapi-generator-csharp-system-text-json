@@ -10,17 +10,8 @@
 {{#vendorExtensions.x-com-visible}}
   [ComVisible({{{.}}})]
 {{/vendorExtensions.x-com-visible}}
-{{#allowableValues}}
-  {{#enumVars}}
-    {{#-first}}
-      {{#isString}}
-        {{^useGenericHost}}
-          [EnumStrings, JsonConverter(typeof(JsonStringEnumMemberConverter))]
-        {{/useGenericHost}}
-      {{/isString}}
-    {{/-first}}
-  {{/enumVars}}
-{{/allowableValues}}
+[Microsoft.Extensions.EnumStrings.EnumStrings(ExtensionNamespace = "{{packageName}}.{{modelPackage}}.{{classname}}Extensions"{{^nonPublicApi}}, ExtensionClassModifiers ="public static"{{/nonPublicApi}})]
+[JsonConverter(typeof(JsonStringEnumConverter))]
 {{>visibility}} enum {{datatypeWithEnum}}{{^datatypeWithEnum}}{{classname}}{{/datatypeWithEnum}}{{#vendorExtensions.x-enum-byte}}: byte{{/vendorExtensions.x-enum-byte}}
 {
   {{#allowableValues}}

@@ -2,12 +2,11 @@
 
 namespace {{packageName}}.Client.Auth;
 
-using Microsoft.Extensions.EnumStrings;
 
 /// <summary>
 /// Available flows for OAuth2 authentication
 /// </summary>
-[EnumStrings]
+[Microsoft.Extensions.EnumStrings.EnumStrings(ExtensionNamespace = "{{packageName}}.Client.Auth.OAuthFlowExtensions"{{^nonPublicApi}}, ExtensionClassModifiers ="public static"{{/nonPublicApi}})]
 public enum OAuthFlow
 {
   /// <summary>Authorization code flow</summary>

@@ -5,11 +5,8 @@
   {{#description}}
     /// <value>{{.}}</value>
   {{/description}}
-  {{#isString}}
-    {{^useGenericHost}}
-      [EnumStrings, JsonConverter(typeof(JsonStringEnumConverter))]
-    {{/useGenericHost}}
-  {{/isString}}
+  [Microsoft.Extensions.EnumStrings.EnumStrings(ExtensionNamespace = "{{packageName}}.{{modelPackage}}.{{classname}}Extensions"{{^nonPublicApi}}, ExtensionClassModifiers ="public static"{{/nonPublicApi}})]
+  [JsonConverter(typeof(JsonStringEnumConverter))]
   {{>visibility}} enum {{datatypeWithEnum}}{{^datatypeWithEnum}}{{classname}}{{/datatypeWithEnum}}{{#vendorExtensions.x-enum-byte}}: byte{{/vendorExtensions.x-enum-byte}}
   {
     {{#allowableValues}}
