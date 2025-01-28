@@ -5,8 +5,8 @@
   {{#vendorExtensions.x-cls-compliant}}[CLSCompliant({{{.}}})]{{/vendorExtensions.x-cls-compliant}}{{#vendorExtensions.x-com-visible}}[ComVisible({{{.}}})]{{/vendorExtensions.x-com-visible}}
     {{>visibility}} sealed partial class {{classname}} : AbstractOpenAPISchema{{#parent}},{{/parent}}{{#validatable}}{{^parent}},{{/parent}}{{/validatable}}{{#lambda.joinWithComma}}{{#parent}}{{{.}}}  {{/parent}}{{#equatable}}IEquatable<{{classname}}>  {{/equatable}}{{#validatable}}IValidatableObject  {{/validatable}}{{/lambda.joinWithComma}}
     {
-      public override string SchemaType { get; } = AnyOf;{{#model.isNullable}}
-      public override bool IsNullable { get; } = true;{{/model.isNullable}}
+      public override string SchemaType { get; } = AnyOf;{{#isNullable}}
+      public override bool IsNullable { get; } = true;{{/isNullable}}
       
       {{#isNullable}}
         /// <summary>
@@ -23,27 +23,24 @@
             /// with the <see cref="{{#lambdaCref}}{{{dataType}}}{{/lambdaCref}}" /> class
             /// </summary>
             /// <param name="actualInstance">An instance of {{dataType}}.</param>
-            public {{classname}}({{#lambda.optional}}{{{dataType}}}{{/lambda.optional}} actualInstance)
-            {
-              this.ActualInstance = actualInstance == default ? throw new ArgumentException("Invalid instance found. Must not be null.") : actualInstance;
-            }
+            public {{classname}}({{dataType}} actualInstance) => _actualInstance = actualInstance;
+            
           {{/isNull}}
         {{/vendorExtensions.x-duplicated-data-type}}
       {{/composedSchemas.anyOf}}
-      
-      private object{{#model.isNullable}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}}{{/model.isNullable}} _actualInstance;
+      private object{{#isNullable}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}}{{/isNullable}} _actualInstance;
       
       /// <summary>
       /// Gets or Sets ActualInstance
       /// </summary>
-      public override object{{#model.isNullable}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}}{{/model.isNullable}} ActualInstance
+      public override object{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}} ActualInstance
       {
-        get => _actualInstance;
+        get => _actualInstance{{#nullableReferenceTypes}}{{^isNullable}}!{{/isNullable}}{{/nullableReferenceTypes}};
         set
         {
-          this._actualInstance = value switch
-          { {{#model.isNullable}}{{#nullableReferenceTypes}}
-          null => null,{{/nullableReferenceTypes}}{{/model.isNullable}}
+          _actualInstance = value switch
+          { {{#isNullable}}{{#nullableReferenceTypes}}
+          null => null,{{/nullableReferenceTypes}}{{/isNullable}}
           {{#anyOf}}
             {{{.}}} _ => value,
           {{/anyOf}}
@@ -91,20 +88,15 @@
     /// <returns>An instance of {{classname}}</returns>
     public static {{classname}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}} FromJson(string jsonString)
     {
-      {{classname}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}} new{{classname}} = default;
-      
       if (string.IsNullOrEmpty(jsonString))
       {
-        return new{{classname}};
+        return default;
       }
       {{#anyOf}}
         
         try
         {
-          new{{classname}} = new {{classname}}(JsonSerializer.Deserialize<{{{.}}}>(jsonString, {{classname}}.SerializerSettings));
-          
-          // deserialization is considered successful at this point if no exception has been thrown.
-          return new{{classname}};
+          return new {{classname}}(JsonSerializer.Deserialize<{{{.}}}>(jsonString, {{classname}}.SerializerSettings){{#nullableReferenceTypes}}!{{/nullableReferenceTypes}}); {{#nullableReferenceTypes}}// We expect the force-dereference to cause a nullref here{{/nullableReferenceTypes}}
         }
         catch (Exception exception)
         {

@@ -5,8 +5,8 @@
   {{#vendorExtensions.x-cls-compliant}}[CLSCompliant({{{.}}})]{{/vendorExtensions.x-cls-compliant}}{{#vendorExtensions.x-com-visible}}[ComVisible({{{.}}})]{{/vendorExtensions.x-com-visible}}
     {{>visibility}} sealed partial class {{classname}} : {{#lambda.joinWithComma}}AbstractOpenAPISchema  {{#parent}}{{{.}}}  {{/parent}}{{#equatable}}IEquatable<{{classname}}>  {{/equatable}}{{#validatable}}IValidatableObject  {{/validatable}}{{/lambda.joinWithComma}}
     {
-      public override string SchemaType { get; } = OneOf;{{#model.isNullable}}
-      public override bool IsNullable { get; } = true;{{/model.isNullable}}
+      public override string SchemaType { get; } = OneOf;{{#isNullable}}
+      public override bool IsNullable { get; } = true;{{/isNullable}}
       
       {{#isNullable}}
         /// <summary>
@@ -23,28 +23,24 @@
             /// with the <see cref="{{#lambdaCref}}{{{dataType}}}{{/lambdaCref}}" /> class
             /// </summary>
             /// <param name="actualInstance">An instance of {{dataType}}.</param>
-            public {{classname}}({{#lambda.optional}}{{{dataType}}}{{/lambda.optional}} actualInstance)
-            {
-              this.ActualInstance = actualInstance{{^model.isNullable}}{{^isPrimitiveType}} ?? throw new ArgumentException("Invalid instance found. Must not be null."){{/isPrimitiveType}}{{#isPrimitiveType}}{{#isArray}} ?? throw new ArgumentException("Invalid instance found. Must not be null."){{/isArray}}{{/isPrimitiveType}}{{#isPrimitiveType}}{{#isFreeFormObject}} ?? throw new ArgumentException("Invalid instance found. Must not be null."){{/isFreeFormObject}}{{/isPrimitiveType}}{{#isPrimitiveType}}{{#isString}} ?? throw new ArgumentException("Invalid instance found. Must not be null."){{/isString}}{{/isPrimitiveType}}{{/model.isNullable}};
-            }
+            public {{classname}}({{{dataType}}} actualInstance) => _actualInstance = actualInstance;
             
           {{/isNull}}
         {{/vendorExtensions.x-duplicated-data-type}}
       {{/composedSchemas.oneOf}}
-      
-      private object{{#model.isNullable}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}}{{/model.isNullable}} _actualInstance;
+      private object{{#isNullable}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}}{{/isNullable}} _actualInstance;
       
       /// <summary>
       /// Gets or Sets ActualInstance
       /// </summary>
       public override object{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}} ActualInstance
       {
-        get => _actualInstance;
+        get => _actualInstance{{#nullableReferenceTypes}}{{^isNullable}}!{{/isNullable}}{{/nullableReferenceTypes}};
         set
         {
-          this._actualInstance = value switch
-          { {{#nullableReferenceTypes}}
-          null => null,{{/nullableReferenceTypes}}
+          _actualInstance = value switch
+          { {{#isNullable}}{{#nullableReferenceTypes}}
+          null => null,{{/nullableReferenceTypes}}{{/isNullable}}
           {{#oneOf}}
             {{{.}}} _ => value,
           {{/oneOf}}
@@ -61,10 +57,7 @@
           /// the InvalidClassException will be thrown
           /// </summary>
           /// <returns>An instance of {{dataType}}</returns>
-          public {{#lambda.optional}}{{{dataType}}}{{/lambda.optional}} Get{{#lambda.titlecase}}{{baseType}}{{/lambda.titlecase}}{{#isArray}}{{#lambda.titlecase}}{{{dataFormat}}}{{/lambda.titlecase}}{{/isArray}}()
-          {
-            return ({{#lambda.optional}}{{{dataType}}}{{/lambda.optional}})this.ActualInstance;
-          }
+          public {{#lambda.optional}}{{{dataType}}}{{/lambda.optional}} Get{{#lambda.titlecase}}{{baseType}}{{/lambda.titlecase}}{{#isArray}}{{#lambda.titlecase}}{{{dataFormat}}}{{/lambda.titlecase}}{{/isArray}}() => ({{#lambda.optional}}{{{dataType}}}{{/lambda.optional}})this.ActualInstance;
         {{/isNull}}
       {{/vendorExtensions.x-duplicated-data-type}}
     {{/composedSchemas.oneOf}}
@@ -96,7 +89,6 @@
     public static {{classname}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}} FromJson(string jsonString)
     {
       {{classname}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}} new{{classname}} = default;
-      
       if (string.IsNullOrEmpty(jsonString))
       {
         return new{{classname}};
@@ -112,7 +104,7 @@
             {
               {{#mappedModels}}
                 case "{{{mappingName}}}":
-                new{{classname}} = new {{classname}}(JsonSerializer.Deserialize<{{{modelName}}}>(jsonString, {{classname}}.AdditionalPropertiesSerializerSettings));
+                new{{classname}} = new {{classname}}(JsonSerializer.Deserialize<{{{modelName}}}>(jsonString, {{classname}}.AdditionalPropertiesSerializerSettings){{^isNullable}}!{{/isNullable}});
                 return new{{classname}};
               {{/mappedModels}}
               default:
@@ -133,24 +125,23 @@
         try
         {
           // if it does not contains "AdditionalProperties", use SerializerSettings to deserialize
-          if (typeof({{{.}}}).GetProperty("AdditionalProperties") is null)
+          var deserialized = JsonSerializer.Deserialize<{{{.}}}>(jsonString, typeof({{{.}}}).GetProperty("AdditionalProperties") is null
+              ? {{classname}}.SerializerSettings : {{classname}}.AdditionalPropertiesSerializerSettings);
+
+          // deserialization is considered successful at this point if no exception has been thrown and the result isn't null.
+          if (deserialized is not null)
           {
-            new{{classname}} = new {{classname}}(JsonSerializer.Deserialize<{{{.}}}>(jsonString, {{classname}}.SerializerSettings));
+            new{{classname}} = new {{classname}}(deserialized{{^isNullable}}!{{/isNullable}});
+            matchedTypes.Add("{{{.}}}");
+            match++;
           }
-          else
-          {
-            new{{classname}} = new {{classname}}(JsonSerializer.Deserialize<{{{.}}}>(jsonString, {{classname}}.AdditionalPropertiesSerializerSettings));
-          }
-          
-          matchedTypes.Add("{{{.}}}");
-          match++;
         }
         catch (Exception exception)
         {
           // deserialization failed, try the next one
           System.Diagnostics.Debug.WriteLine(string.Format("Failed to deserialize `{0}` into {{{.}}}: {1}", jsonString, exception.ToString()));
         }
-
+        
       {{/oneOf}}
       return match switch
       {
@@ -222,7 +213,6 @@
   IEnumerable<System.ComponentModel.DataAnnotations.ValidationResult> IValidatableObject.Validate(ValidationContext validationContext)
   {
     yield break;
-  }
-{{/validatable}}
+  }{{/validatable}}
 }
 {{/model}}
