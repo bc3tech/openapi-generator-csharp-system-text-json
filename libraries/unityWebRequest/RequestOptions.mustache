@@ -52,8 +52,8 @@ namespace {{packageName}}.Client
         public RequestOptions()
         {
             PathParameters = new Dictionary<string, string>();
-            QueryParameters = new Multimap<string, string>();
-            HeaderParameters = new Multimap<string, string>();
+            QueryParameters = [];
+            HeaderParameters = [];
             FormParameters = new Dictionary<string, string>();
             Cookies = new List<Cookie>();
         }

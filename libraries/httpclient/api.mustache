@@ -7,6 +7,9 @@ using System.Net.Http;
 {{#useCollection}}
   using System.Collections.ObjectModel;
 {{/useCollection}}
+{{#supportsAsync}}
+using System.Threading.Tasks;
+{{/supportsAsync}}
 
 using {{packageName}}.Client;
 
@@ -76,7 +79,7 @@ using {{packageName}}.Client;
           {{#isDeprecated}}
             [Obsolete]
           {{/isDeprecated}}
-          {{#returnType}}System.Threading.Tasks.Task<{{{.}}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}}>{{/returnType}}{{^returnType}}System.Threading.Tasks.Task{{/returnType}} {{operationId}}Async({{#allParams}}{{{dataType}}} {{paramName}}{{^required}}{{#optionalMethodArgument}} = default{{/optionalMethodArgument}}{{/required}}, {{/allParams}}CancellationToken cancellationToken = default);
+          {{#returnType}}Task<{{{.}}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}}>{{/returnType}}{{^returnType}}Task{{/returnType}} {{operationId}}Async({{#allParams}}{{{dataType}}} {{paramName}}{{^required}}{{#optionalMethodArgument}} = default{{/optionalMethodArgument}}{{/required}}, {{/allParams}}CancellationToken cancellationToken = default);
             
             /// <summary>
             /// {{summary}}
@@ -93,7 +96,7 @@ using {{packageName}}.Client;
             {{#isDeprecated}}
               [Obsolete]
             {{/isDeprecated}}
-            System.Threading.Tasks.Task<ApiResponse<{{{returnType}}}{{^returnType}}object{{/returnType}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}}>> {{operationId}}WithHttpInfoAsync({{#allParams}}{{{dataType}}} {{paramName}}{{^required}}{{#optionalMethodArgument}} = default{{/optionalMethodArgument}}{{/required}}, {{/allParams}}CancellationToken cancellationToken = default);
+            Task<ApiResponse<{{{returnType}}}{{^returnType}}object{{/returnType}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}}>> {{operationId}}WithHttpInfoAsync({{#allParams}}{{{dataType}}} {{paramName}}{{^required}}{{#optionalMethodArgument}} = default{{/optionalMethodArgument}}{{/required}}, {{/allParams}}CancellationToken cancellationToken = default);
           {{/operation}}
           #endregion Asynchronous Operations
         }
@@ -129,10 +132,7 @@ using {{packageName}}.Client;
         /// <returns></returns>
         public {{classname}}(string? basePath)
         {
-          this.Configuration = {{packageName}}.Client.Configuration.MergeConfigurations(
-          GlobalConfiguration.Instance,
-          new Configuration { BasePath = basePath }
-          );
+          this.Configuration = {{packageName}}.Client.Configuration.MergeConfigurations(GlobalConfiguration.Instance, new Configuration { BasePath = basePath });
           this.ApiClient = new ApiClient(this.Configuration.BasePath);
           this.Client =  this.ApiClient;
           {{#supportsAsync}}
@@ -149,14 +149,11 @@ using {{packageName}}.Client;
         /// <param name="configuration">An instance of Configuration.</param>
         /// <exception cref="ArgumentNullException"></exception>
         /// <returns></returns>
-        public {{classname}}({{packageName}}.Client.Configuration configuration)
+        public {{classname}}(Configuration configuration)
         {
           ArgumentNullException.ThrowIfNull(configuration);
           
-          this.Configuration = {{packageName}}.Client.Configuration.MergeConfigurations(
-          GlobalConfiguration.Instance,
-          configuration
-          );
+          this.Configuration = {{packageName}}.Client.Configuration.MergeConfigurations(GlobalConfiguration.Instance, configuration);
           this.ApiClient = new ApiClient(this.Configuration.BasePath);
           this.Client = this.ApiClient;
           {{#supportsAsync}}
@@ -195,10 +192,7 @@ using {{packageName}}.Client;
         {
           ArgumentNullException.ThrowIfNull(client);
           
-          this.Configuration = {{packageName}}.Client.Configuration.MergeConfigurations(
-          GlobalConfiguration.Instance,
-          new Configuration { BasePath = basePath }
-          );
+          this.Configuration = {{packageName}}.Client.Configuration.MergeConfigurations(GlobalConfiguration.Instance, new Configuration { BasePath = basePath });
           this.ApiClient = new ApiClient(client, this.Configuration.BasePath, handler);
           this.Client =  this.ApiClient;
           {{#supportsAsync}}
@@ -224,10 +218,7 @@ using {{packageName}}.Client;
           ArgumentNullException.ThrowIfNull(configuration);
           ArgumentNullException.ThrowIfNull(client);
           
-          this.Configuration = {{packageName}}.Client.Configuration.MergeConfigurations(
-          GlobalConfiguration.Instance,
-          configuration
-          );
+          this.Configuration = {{packageName}}.Client.Configuration.MergeConfigurations(GlobalConfiguration.Instance, configuration);
           this.ApiClient = new ApiClient(client, this.Configuration.BasePath, handler);
           this.Client = this.ApiClient;
           {{#supportsAsync}}
@@ -452,35 +443,27 @@ using {{packageName}}.Client;
                   
                 {{/required}}
               {{/formParams}}
-              {{#bodyParam}}
-                localVarRequestOptions.Data = {{paramName}};
+              {{#bodyParam}}localVarRequestOptions.Data = {{paramName}};
+                
               {{/bodyParam}}
-              
               {{#authMethods}}
                 // authentication ({{name}}) required
                 {{#isApiKey}}
-                  {{#isKeyInCookie}}
-                    // cookie parameter support
-                    if (!string.IsNullOrEmpty(this.Configuration.GetApiKeyWithPrefix("{{keyParamName}}")))
-                    {
-                      localVarRequestOptions.Cookies.Add(new Cookie("{{keyParamName}}", this.Configuration.GetApiKeyWithPrefix("{{keyParamName}}")));
-                    }
-                    
-                  {{/isKeyInCookie}}
-                  {{#isKeyInHeader}}
-                    if (!string.IsNullOrEmpty(this.Configuration.GetApiKeyWithPrefix("{{keyParamName}}")))
-                    {
-                      localVarRequestOptions.HeaderParameters.Add("{{keyParamName}}", this.Configuration.GetApiKeyWithPrefix("{{keyParamName}}"));
-                    }
-                    
-                  {{/isKeyInHeader}}
-                  {{#isKeyInQuery}}
-                    if (!string.IsNullOrEmpty(this.Configuration.GetApiKeyWithPrefix("{{keyParamName}}")))
-                    {
-                      localVarRequestOptions.QueryParameters.Add({{packageName}}.Client.ClientUtils.ParameterToMultiMap("", "{{keyParamName}}", this.Configuration.GetApiKeyWithPrefix("{{keyParamName}}")));
-                    }
-                    
-                  {{/isKeyInQuery}}
+                  var apiKeyIfExists = this.Configuration.GetApiKeyWithPrefix("{{keyParamName}}");
+                  if (!string.IsNullOrEmpty(apiKeyIfExists))
+                  {
+                    {{#isKeyInCookie}}
+                      // cookie parameter support
+                      localVarRequestOptions.Cookies.Add(new Cookie("{{keyParamName}}", apiKeyIfExists));
+                    {{/isKeyInCookie}}
+                    {{#isKeyInHeader}}
+                      localVarRequestOptions.HeaderParameters.Add("{{keyParamName}}", apiKeyIfExists);
+                    {{/isKeyInHeader}}
+                    {{#isKeyInQuery}}
+                      localVarRequestOptions.QueryParameters.Add({{packageName}}.Client.ClientUtils.ParameterToMultiMap("", "{{keyParamName}}", apiKeyIfExists));
+                    {{/isKeyInQuery}}
+                  }
+
                 {{/isApiKey}}
                 {{#isBasicBasic}}
                   // http basic authentication required
@@ -522,6 +505,7 @@ using {{packageName}}.Client;
                       }
                     }
                   }
+
                 {{/isHttpSignature}}
               {{/authMethods}}
               
@@ -552,7 +536,7 @@ using {{packageName}}.Client;
             {{#isDeprecated}}
               [Obsolete]
             {{/isDeprecated}}
-            public async System.Threading.Tasks.Task{{#returnType}}<{{{.}}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}}>{{/returnType}} {{operationId}}Async({{#allParams}}{{{dataType}}} {{paramName}}{{^required}}{{#optionalMethodArgument}} = default{{/optionalMethodArgument}}{{/required}}, {{/allParams}}CancellationToken cancellationToken = default)
+            public async Task{{#returnType}}<{{{.}}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}}>{{/returnType}} {{operationId}}Async({{#allParams}}{{{dataType}}} {{paramName}}{{^required}}{{#optionalMethodArgument}} = default{{/optionalMethodArgument}}{{/required}}, {{/allParams}}CancellationToken cancellationToken = default)
             {
               {{#returnType}}{{packageName}}.Client.ApiResponse<{{{returnType}}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}}> localVarResponse = await {{operationId}}WithHttpInfoAsync({{#allParams}}{{paramName}}{{^-last}}, {{/-last}}{{/allParams}}{{#allParams.0}}, {{/allParams.0}}cancellationToken).ConfigureAwait(false);
                 return localVarResponse.Data;{{/returnType}}{{^returnType}}await {{operationId}}WithHttpInfoAsync({{#allParams}}{{paramName}}{{^-last}}, {{/-last}}{{/allParams}}{{#allParams.0}}, {{/allParams.0}}cancellationToken).ConfigureAwait(false);{{/returnType}}
@@ -570,7 +554,7 @@ using {{packageName}}.Client;
               {{#isDeprecated}}
                 [Obsolete]
               {{/isDeprecated}}
-              public async System.Threading.Tasks.Task<{{packageName}}.Client.ApiResponse<{{{returnType}}}{{^returnType}}object{{/returnType}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}}>> {{operationId}}WithHttpInfoAsync({{#allParams}}{{{dataType}}} {{paramName}}{{^required}}{{#optionalMethodArgument}} = default{{/optionalMethodArgument}}{{/required}}, {{/allParams}}CancellationToken cancellationToken = default)
+              public async Task<{{packageName}}.Client.ApiResponse<{{{returnType}}}{{^returnType}}object{{/returnType}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}}>> {{operationId}}WithHttpInfoAsync({{#allParams}}{{{dataType}}} {{paramName}}{{^required}}{{#optionalMethodArgument}} = default{{/optionalMethodArgument}}{{/required}}, {{/allParams}}CancellationToken cancellationToken = default)
               {
                 {{#allParams}}
                   {{#required}}
@@ -669,35 +653,27 @@ using {{packageName}}.Client;
                     
                   {{/required}}
                 {{/formParams}}
-                {{#bodyParam}}
-                  localVarRequestOptions.Data = {{paramName}};
+                {{#bodyParam}}localVarRequestOptions.Data = {{paramName}};
+
                 {{/bodyParam}}
-                
                 {{#authMethods}}
                   // authentication ({{name}}) required
                   {{#isApiKey}}
-                    {{#isKeyInCookie}}
-                      // cookie parameter support
-                      if (!string.IsNullOrEmpty(this.Configuration.GetApiKeyWithPrefix("{{keyParamName}}")))
-                      {
-                        localVarRequestOptions.Cookies.Add(new Cookie("{{keyParamName}}", this.Configuration.GetApiKeyWithPrefix("{{keyParamName}}")));
-                      }
-                      
-                    {{/isKeyInCookie}}
-                    {{#isKeyInHeader}}
-                      if (!string.IsNullOrEmpty(this.Configuration.GetApiKeyWithPrefix("{{keyParamName}}")))
-                      {
-                        localVarRequestOptions.HeaderParameters.Add("{{keyParamName}}", this.Configuration.GetApiKeyWithPrefix("{{keyParamName}}"));
-                      }
-                      
-                    {{/isKeyInHeader}}
-                    {{#isKeyInQuery}}
-                      if (!string.IsNullOrEmpty(this.Configuration.GetApiKeyWithPrefix("{{keyParamName}}")))
-                      {
-                        localVarRequestOptions.QueryParameters.Add({{packageName}}.Client.ClientUtils.ParameterToMultiMap("", "{{keyParamName}}", this.Configuration.GetApiKeyWithPrefix("{{keyParamName}}")));
-                      }
-                      
-                    {{/isKeyInQuery}}
+                    var apiKeyIfExists = this.Configuration.GetApiKeyWithPrefix("{{keyParamName}}");
+                    if (!string.IsNullOrEmpty(apiKeyIfExists))
+                    {
+                      {{#isKeyInCookie}}
+                        // cookie parameter support
+                        localVarRequestOptions.Cookies.Add(new Cookie("{{keyParamName}}", apiKeyIfExists));
+                      {{/isKeyInCookie}}
+                      {{#isKeyInHeader}}
+                        localVarRequestOptions.HeaderParameters.Add("{{keyParamName}}", apiKeyIfExists);
+                      {{/isKeyInHeader}}
+                      {{#isKeyInQuery}}
+                        localVarRequestOptions.QueryParameters.Add({{packageName}}.Client.ClientUtils.ParameterToMultiMap("", "{{keyParamName}}", apiKeyIfExists));
+                      {{/isKeyInQuery}}
+                    }
+
                   {{/isApiKey}}
                   {{#isBasic}}
                     {{#isBasicBasic}}
