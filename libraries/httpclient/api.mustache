@@ -510,7 +510,6 @@ using {{packageName}}.Client;
                   
                 {{/isHttpSignature}}
               {{/authMethods}}
-              
               // make the HTTP request
               var localVarResponse = this.Client.{{#lambda.titlecase}}{{#lambda.lowercase}}{{httpMethod}}{{/lambda.lowercase}}{{/lambda.titlecase}}<{{{returnType}}}{{^returnType}}object{{/returnType}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}}>("{{{path}}}", localVarRequestOptions, this.Configuration);
               
