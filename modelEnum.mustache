@@ -11,7 +11,7 @@
   [ComVisible({{{.}}})]
 {{/vendorExtensions.x-com-visible}}
 [Microsoft.Extensions.EnumStrings.EnumStrings(ExtensionNamespace = "{{packageName}}.{{modelPackage}}.{{classname}}Extensions"{{^nonPublicApi}}, ExtensionClassModifiers ="public static"{{/nonPublicApi}})]
-[JsonConverter(typeof(JsonStringEnumConverter))]
+[JsonConverter(typeof(JsonStringEnumConverter<{{datatypeWithEnum}}{{^datatypeWithEnum}}{{classname}}{{/datatypeWithEnum}}>))]
 {{>visibility}} enum {{datatypeWithEnum}}{{^datatypeWithEnum}}{{classname}}{{/datatypeWithEnum}}{{#vendorExtensions.x-enum-byte}}: byte{{/vendorExtensions.x-enum-byte}}
 {
   {{#allowableValues}}
