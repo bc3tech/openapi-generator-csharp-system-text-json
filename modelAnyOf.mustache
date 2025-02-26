@@ -3,6 +3,7 @@
   /// {{description}}{{^description}}{{classname}}{{/description}}
   /// </summary>
   {{#vendorExtensions.x-cls-compliant}}[CLSCompliant({{{.}}})]{{/vendorExtensions.x-cls-compliant}}{{#vendorExtensions.x-com-visible}}[ComVisible({{{.}}})]{{/vendorExtensions.x-com-visible}}
+    [JsonConverter(typeof(AbstractOpenAPISchemaJsonConverter<{{classname}}>))]
     {{>visibility}} sealed partial class {{classname}} : AbstractOpenAPISchema{{#parent}},{{/parent}}{{#validatable}}{{^parent}},{{/parent}}{{/validatable}}{{#lambda.joinWithComma}}{{#parent}}{{{.}}}  {{/parent}}{{#equatable}}IEquatable<{{classname}}>  {{/equatable}}{{#validatable}}IValidatableObject  {{/validatable}}{{/lambda.joinWithComma}}
     {
       public override string SchemaType { get; } = AnyOf;{{#isNullable}}

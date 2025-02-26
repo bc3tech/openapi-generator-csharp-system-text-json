@@ -3,6 +3,7 @@
   /// {{description}}{{^description}}{{classname}}{{/description}}
   /// </summary>
   {{#vendorExtensions.x-cls-compliant}}[CLSCompliant({{{.}}})]{{/vendorExtensions.x-cls-compliant}}{{#vendorExtensions.x-com-visible}}[ComVisible({{{.}}})]{{/vendorExtensions.x-com-visible}}
+    [JsonConverter(typeof(AbstractOpenAPISchemaJsonConverter<{{classname}}>))]
     {{>visibility}} sealed partial class {{classname}} : {{#lambda.joinWithComma}}AbstractOpenAPISchema  {{#parent}}{{{.}}}  {{/parent}}{{#equatable}}IEquatable<{{classname}}>  {{/equatable}}{{#validatable}}IValidatableObject  {{/validatable}}{{/lambda.joinWithComma}}
     {
       public override string SchemaType { get; } = OneOf;{{#isNullable}}
@@ -126,8 +127,8 @@
         {
           // if it does not contains "AdditionalProperties", use SerializerSettings to deserialize
           var deserialized = JsonSerializer.Deserialize<{{{.}}}>(jsonString, typeof({{{.}}}).GetProperty("AdditionalProperties") is null
-              ? {{classname}}.SerializerSettings : {{classname}}.AdditionalPropertiesSerializerSettings);
-
+          ? {{classname}}.SerializerSettings : {{classname}}.AdditionalPropertiesSerializerSettings);
+          
           // deserialization is considered successful at this point if no exception has been thrown and the result isn't null.
           if (deserialized is not null)
           {
