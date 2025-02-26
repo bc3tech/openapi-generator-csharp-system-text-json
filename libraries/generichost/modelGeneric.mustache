@@ -1,7 +1,7 @@
     /// <summary>
     /// {{description}}{{^description}}{{classname}}{{/description}}
     /// </summary>
-    {{>visibility}} partial class {{classname}}{{#lambda.firstDot}}{{#parent}} : .{{/parent}}{{#validatable}} : .{{/validatable}}{{#equatable}}{{#readOnlyVars}}{{#-first}} : .{{/-first}}{{/readOnlyVars}}{{/equatable}}{{/lambda.firstDot}}{{#lambda.joinWithComma}}{{#parent}}{{{.}}}  {{/parent}}{{>ImplementsIEquatable}}{{#validatable}}IValidatableObject  {{/validatable}}{{/lambda.joinWithComma}}
+    {{>visibility}} partial record {{classname}}{{#lambda.firstDot}}{{#parent}} : .{{/parent}}{{#validatable}} : .{{/validatable}}{{#equatable}}{{#readOnlyVars}}{{#-first}} : .{{/-first}}{{/readOnlyVars}}{{/equatable}}{{/lambda.firstDot}}{{#lambda.joinWithComma}}{{#parent}}{{{.}}}  {{/parent}}{{>ImplementsIEquatable}}{{#validatable}}IValidatableObject  {{/validatable}}{{/lambda.joinWithComma}}
     {
         {{#composedSchemas.oneOf}}
         {{^vendorExtensions.x-duplicated-data-type}}
@@ -179,28 +179,6 @@
 
         {{/parentModel}}
         {{/isAdditionalPropertiesTrue}}
-        /// <summary>
-        /// Returns the string presentation of the object
-        /// </summary>
-        /// <returns>string presentation of the object</returns>
-        public override string ToString()
-        {
-            StringBuilder sb = new();
-            sb.AppendLine("class {{classname}} {");
-            {{#parent}}
-            sb.Append("  ").Append(base.ToString()?.Replace("\n", "\n  ")).AppendLine();
-            {{/parent}}
-            {{#vars}}
-            sb.Append("  {{name}}: ").AppendLine({{name}});
-            {{/vars}}
-            {{#isAdditionalPropertiesTrue}}
-            {{^parentModel}}
-            sb.Append("  AdditionalProperties: ").AppendLine(AdditionalProperties);
-            {{/parentModel}}
-            {{/isAdditionalPropertiesTrue}}
-            sb.AppendLine("}");
-            return sb.ToString();
-        }
         {{#equatable}}
         {{#readOnlyVars}}
         {{#-first}}

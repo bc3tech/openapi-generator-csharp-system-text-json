@@ -16,7 +16,7 @@
   {{/discriminator}}
 {{/useUnityWebRequest}}
 {{#hasRequired}}#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.{{/hasRequired}}
-  {{>visibility}}{{^hasRequired}}{{#hasOnlyReadOnly}} sealed{{/hasOnlyReadOnly}}{{/hasRequired}} partial class {{classname}}{{#lambda.firstDot}}{{#parent}} : .{{/parent}}{{#validatable}} : .{{/validatable}}{{#equatable}} : .{{/equatable}}{{/lambda.firstDot}}{{#lambda.joinWithComma}}{{#parent}}{{{.}}}  {{/parent}}{{#equatable}}IEquatable<{{classname}}>  {{/equatable}}{{#validatable}}IValidatableObject  {{/validatable}}{{/lambda.joinWithComma}}
+  {{>visibility}}{{^hasRequired}}{{#hasOnlyReadOnly}} sealed{{/hasOnlyReadOnly}}{{/hasRequired}} partial record {{classname}}{{#lambda.firstDot}}{{#parent}} : .{{/parent}}{{#validatable}} : .{{/validatable}}{{#equatable}} : .{{/equatable}}{{/lambda.firstDot}}{{#lambda.joinWithComma}}{{#parent}}{{{.}}}  {{/parent}}{{#equatable}}IEquatable<{{classname}}>  {{/equatable}}{{#validatable}}IValidatableObject  {{/validatable}}{{/lambda.joinWithComma}}
   {
     {{#vars}}
       {{#items.isEnum}}
@@ -280,32 +280,6 @@
                 public IDictionary<string, object> AdditionalProperties { get; set; }
                 
               {{/isAdditionalPropertiesTrue}}
-              /// <summary>
-              /// Returns the string presentation of the object
-              /// </summary>
-              /// <returns>string presentation of the object</returns>
-              public override string ToString()
-              {
-                StringBuilder sb = new();
-                sb.AppendLine("class {{classname}} {");
-                {{#parent}}
-                  sb.Append("  ").Append(base.ToString().Replace("\n", "\n  ")).AppendLine();
-                {{/parent}}
-                {{#vars}}
-                  {{#isArray}}
-                    sb.Append("  {{name}}: ").AppendLine($"{({{#nullableReferenceTypes}}{{name}} is null ? "[null]" : {{/nullableReferenceTypes}}string.Join(", ", {{name}}))}");
-                  {{/isArray}}
-                  {{^isArray}}
-                    sb.Append("  {{name}}: ").AppendLine($"{ {{name}}{{#nullableReferenceTypes}}{{^required}}?.ToString() ?? "[null]"{{/required}}{{/nullableReferenceTypes}} }");
-                  {{/isArray}}
-                {{/vars}}
-                {{#isAdditionalPropertiesTrue}}
-                  sb.Append("  AdditionalProperties: ").AppendLine($"{AdditionalProperties{{#nullableReferenceTypes}}{{^required}}?.ToString() ?? "[null]"{{/required}}{{/nullableReferenceTypes}} }");
-                {{/isAdditionalPropertiesTrue}}
-                sb.AppendLine("}");
-                return sb.ToString();
-              }
-              
               /// <summary>
               /// Returns the JSON string presentation of the object
               /// </summary>

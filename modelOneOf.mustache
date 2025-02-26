@@ -4,18 +4,11 @@
   /// </summary>
   {{#vendorExtensions.x-cls-compliant}}[CLSCompliant({{{.}}})]{{/vendorExtensions.x-cls-compliant}}{{#vendorExtensions.x-com-visible}}[ComVisible({{{.}}})]{{/vendorExtensions.x-com-visible}}
     [JsonConverter(typeof(AbstractOpenAPISchemaJsonConverter<{{classname}}>))]
-    {{>visibility}} sealed partial class {{classname}} : {{#lambda.joinWithComma}}AbstractOpenAPISchema  {{#parent}}{{{.}}}  {{/parent}}{{#equatable}}IEquatable<{{classname}}>  {{/equatable}}{{#validatable}}IValidatableObject  {{/validatable}}{{/lambda.joinWithComma}}
+    {{>visibility}} sealed partial record {{classname}} : {{#lambda.joinWithComma}}AbstractOpenAPISchema  {{#parent}}{{{.}}}  {{/parent}}{{#equatable}}IEquatable<{{classname}}>  {{/equatable}}{{#validatable}}IValidatableObject  {{/validatable}}{{/lambda.joinWithComma}}
     {
       public override string SchemaType { get; } = OneOf;{{#isNullable}}
       public override bool IsNullable { get; } = true;{{/isNullable}}
       
-      {{#isNullable}}
-        /// <summary>
-        /// Initializes a new instance of the <see cref="{{classname}}" /> class.
-        /// </summary>
-        public {{classname}}() { }
-        
-      {{/isNullable}}
       {{#composedSchemas.oneOf}}
         {{^vendorExtensions.x-duplicated-data-type}}
           {{^isNull}}
@@ -62,19 +55,6 @@
         {{/isNull}}
       {{/vendorExtensions.x-duplicated-data-type}}
     {{/composedSchemas.oneOf}}
-    
-    /// <summary>
-    /// Returns the string presentation of the object
-    /// </summary>
-    /// <returns>string presentation of the object</returns>
-    public override string ToString()
-    {
-      var sb = new StringBuilder();
-      sb.AppendLine("class {{classname}} {");
-      sb.Append("  ActualInstance: ").Append(this.ActualInstance).AppendLine();
-      sb.AppendLine("}");
-      return sb.ToString();
-    }
     
     /// <summary>
     /// Returns the JSON string presentation of the object
