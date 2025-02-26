@@ -11,7 +11,7 @@
   [ComVisible({{{.}}})]
 {{/vendorExtensions.x-com-visible}}
 [Microsoft.Extensions.EnumStrings.EnumStrings(ExtensionNamespace = "{{packageName}}.{{modelPackage}}.{{classname}}Extensions"{{^nonPublicApi}}, ExtensionClassModifiers ="public static"{{/nonPublicApi}})]
-[JsonConverter(typeof(JsonStringEnumConverter<{{datatypeWithEnum}}{{^datatypeWithEnum}}{{classname}}{{/datatypeWithEnum}}>))]
+[JsonConverter(typeof(JsonStringEnumConverterWithEnumMemberSupport<{{datatypeWithEnum}}{{^datatypeWithEnum}}{{classname}}{{/datatypeWithEnum}}>))]
 {{>visibility}} enum {{datatypeWithEnum}}{{^datatypeWithEnum}}{{classname}}{{/datatypeWithEnum}}{{#vendorExtensions.x-enum-byte}}: byte{{/vendorExtensions.x-enum-byte}}
 {
   {{#allowableValues}}
@@ -19,12 +19,7 @@
       /// <summary>
       /// Enum {{name}} for value: {{value}}
       /// </summary>
-      {{#isString}}
-        {{^useGenericHost}}
-          {{! EnumMember not currently supported in System.Text.Json, use a converter instead }}
-          [EnumMember(Value = "{{{value}}}")]
-        {{/useGenericHost}}
-      {{/isString}}
+      [EnumMember(Value = "{{{value}}}")]
       {{name}}{{^isString}} = {{{value}}}{{/isString}}{{#isString}}{{^vendorExtensions.x-zero-based-enum}} = {{-index}}{{/vendorExtensions.x-zero-based-enum}}{{/isString}}{{^-last}},{{/-last}}
       {{^-last}}
         
@@ -38,26 +33,7 @@
   /// Converts <see cref="{{datatypeWithEnum}}{{^datatypeWithEnum}}{{classname}}{{/datatypeWithEnum}}"/> to and from the JSON value
   /// </summary>
   public static class {{datatypeWithEnum}}{{^datatypeWithEnum}}{{classname}}{{/datatypeWithEnum}}ValueConverter
-  {
-    /// <summary>
-    /// Parses a given value to <see cref="{{datatypeWithEnum}}{{^datatypeWithEnum}}{{classname}}{{/datatypeWithEnum}}"/>
-    /// </summary>
-    /// <param name="value"></param>
-    /// <returns></returns>
-    public static {{datatypeWithEnum}}{{^datatypeWithEnum}}{{classname}}{{/datatypeWithEnum}} FromString(string value)
-    {
-      {{#allowableValues}}
-        {{#enumVars}}
-          if (value.Equals({{^isString}}({{{value}}}).ToString(){{/isString}}{{#isString}}"{{{value}}}"{{/isString}}))
-          {
-            return {{datatypeWithEnum}}{{^datatypeWithEnum}}{{classname}}{{/datatypeWithEnum}}.{{name}};
-          }
-          
-        {{/enumVars}}
-      {{/allowableValues}}
-      throw new NotImplementedException($"Could not convert value to type {{datatypeWithEnum}}{{^datatypeWithEnum}}{{classname}}{{/datatypeWithEnum}}: '{value}'");
-    }
-    
+  {    
     /// <summary>
     /// Parses a given value to <see cref="{{datatypeWithEnum}}{{^datatypeWithEnum}}{{classname}}{{/datatypeWithEnum}}"/>
     /// </summary>
@@ -74,26 +50,6 @@
           _ => null
         };
       }
-      
-      /// <summary>
-      /// Converts the <see cref="{{datatypeWithEnum}}{{^datatypeWithEnum}}{{classname}}{{/datatypeWithEnum}}"/> to the json value
-      /// </summary>
-      /// <param name="value"></param>
-      /// <returns></returns>
-      /// <exception cref="NotImplementedException"></exception>
-      public static {{>EnumValueDataType}} ToJsonValue({{datatypeWithEnum}}{{^datatypeWithEnum}}{{classname}}{{/datatypeWithEnum}} value)
-      {
-        {{^isString}}
-          return ({{>EnumValueDataType}}) value;
-        {{/isString}}
-        {{#isString}}
-          return value switch { {{#allowableValues}}{{#enumVars}}
-          {{datatypeWithEnum}}{{^datatypeWithEnum}}{{classname}}{{/datatypeWithEnum}}.{{name}} => {{^isNumeric}}"{{/isNumeric}}{{{value}}}{{^isNumeric}}"{{/isNumeric}},
-        {{/enumVars}}
-      {{/allowableValues}}
-      _ => throw new NotImplementedException($"Value could not be handled: '{value}'")
-    };
-  {{/isString}}
-}
-}
-{{/useGenericHost}}
+    }
+  {{/useGenericHost}}
+  
