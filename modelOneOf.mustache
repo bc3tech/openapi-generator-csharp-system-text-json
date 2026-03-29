@@ -99,6 +99,11 @@
           }
         {{/discriminator}}
       {{/useOneOfDiscriminatorLookup}}
+
+      if (TryDeserializeByInspection(jsonString, out new{{classname}}))
+      {
+        return new{{classname}};
+      }
       
       int match = 0;
       List<string> matchedTypes = [];
@@ -130,6 +135,53 @@
         > 1 => throw new InvalidDataException("The JSON string `" + jsonString + "` incorrectly matches more than one schema (should be exactly one match): " + matchedTypes),
         _ => new{{classname}}
       };
+    }
+
+    private static bool TryDeserializeByInspection(string jsonString, out {{classname}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}} new{{classname}})
+    {
+      new{{classname}} = default;
+
+      try
+      {
+        using JsonDocument document = JsonDocument.Parse(jsonString);
+        bool handled = false;
+        TryDeserializeByInspection(document.RootElement, jsonString, ref handled, ref new{{classname}});
+        return handled;
+      }
+      catch (JsonException)
+      {
+        return false;
+      }
+    }
+
+    static partial void TryDeserializeByInspection(JsonElement rootElement, string jsonString, ref bool handled, ref {{classname}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}} new{{classname}});
+
+    private delegate {{classname}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}} {{classname}}Deserializer(string jsonString);
+
+    private static bool TryDeserializeKnownTypes(string jsonString, out {{classname}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}} new{{classname}}, params {{classname}}Deserializer[] deserializers)
+    {
+      foreach ({{classname}}Deserializer deserialize in deserializers)
+      {
+        new{{classname}} = deserialize(jsonString);
+        if (new{{classname}} is not null)
+        {
+          return true;
+        }
+      }
+
+      new{{classname}} = default;
+      return false;
+    }
+
+    private static {{classname}}{{#nullableReferenceTypes}}?{{/nullableReferenceTypes}} TryDeserializeKnownType<TActualInstance>(string jsonString, Func<TActualInstance, {{classname}}> create{{classname}})
+      where TActualInstance : class
+    {
+      JsonSerializerOptions serializerOptions = typeof(TActualInstance).GetProperty("AdditionalProperties") is null
+        ? {{classname}}.SerializerSettings
+        : {{classname}}.AdditionalPropertiesSerializerSettings;
+
+      TActualInstance? deserialized = JsonSerializer.Deserialize<TActualInstance>(jsonString, serializerOptions);
+      return deserialized is null ? null : create{{classname}}(deserialized);
     }{{#equatable}}
     
     /// <summary>
